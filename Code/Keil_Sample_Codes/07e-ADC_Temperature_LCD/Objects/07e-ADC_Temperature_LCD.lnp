@@ -1,0 +1,7 @@
+".\Objects\main.obj",
+".\Objects\adc.obj",
+".\Objects\delay.obj",
+".\Objects\gpio.obj",
+".\Objects\lcd.obj" 
+TO ".\Objects\07e-ADC_Temperature_LCD" 
+PRINT(".\Listings\07e-ADC_Temperature_LCD.m51") RAMSIZE(256) 

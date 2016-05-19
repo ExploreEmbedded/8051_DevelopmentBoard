@@ -1,0 +1,4 @@
+".\Objects\main.obj",
+".\Objects\timers.obj" 
+TO ".\Objects\11a-Timers" 
+PRINT(".\Listings\11a-Timers.m51") RAMSIZE(256) 

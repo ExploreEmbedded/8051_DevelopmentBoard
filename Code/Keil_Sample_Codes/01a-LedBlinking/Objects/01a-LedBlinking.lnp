@@ -1,0 +1,3 @@
+".\Objects\main.obj" 
+TO ".\Objects\01a-LedBlinking" 
+PRINT(".\Listings\01a-LedBlinking.m51") RAMSIZE(256) 

@@ -1,0 +1,7 @@
+".\Objects\main.obj",
+".\Objects\delay.obj",
+".\Objects\gpio.obj",
+".\Objects\keypad.obj",
+".\Objects\lcd.obj" 
+TO ".\Objects\10b-Keypad_LCD" 
+PRINT(".\Listings\10b-Keypad_LCD.m51") RAMSIZE(256) 

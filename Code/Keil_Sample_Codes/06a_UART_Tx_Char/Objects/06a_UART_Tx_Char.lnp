@@ -1,0 +1,6 @@
+".\Objects\main.obj",
+".\Objects\delay.obj",
+".\Objects\gpio.obj",
+".\Objects\uart.obj" 
+TO ".\Objects\06a_UART_Tx_Char" 
+PRINT(".\Listings\06a_UART_Tx_Char.m51") RAMSIZE(256) 

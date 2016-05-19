@@ -1,0 +1,7 @@
+".\Objects\main.obj",
+".\Objects\delay.obj",
+".\Objects\gpio.obj",
+".\Objects\keypad.obj",
+".\Objects\uart.obj" 
+TO ".\Objects\10a-Keypad_UART" 
+PRINT(".\Listings\10a-Keypad_UART.m51") RAMSIZE(256) 

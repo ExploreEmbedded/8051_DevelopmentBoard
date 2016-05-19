@@ -1,0 +1,142 @@
+C51 COMPILER V9.02   DELAY                                                                 02/26/2016 20:44:43 PAGE 1   
+
+
+C51 COMPILER V9.02, COMPILATION OF MODULE DELAY
+OBJECT MODULE PLACED IN .\Objects\delay.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE ..\00-libfiles\delay.c OPTIMIZE(8,SPEED) BROWSE INCDIR(..\00-libfiles) D
+                    -EBUG OBJECTEXTEND PRINT(.\Listings\delay.lst) TABS(2) OBJECT(.\Objects\delay.obj)
+
+line level    source
+
+   1          /***************************************************************************************************
+   2                                             ExploreEmbedded    
+   3          ****************************************************************************************************
+   4           * File:   delay.c
+   5           * Version: 15.0
+   6           * Author: ExploreEmbedded
+   7           * Website: http://www.exploreembedded.com/wiki
+   8           * Description: File contains delay routines
+   9           
+  10          The libraries have been tested on ExploreEmbedded development boards. We strongly believe that the 
+  11          library works on any of development boards for respective controllers. However, ExploreEmbedded 
+  12          disclaims any kind of hardware failure resulting out of usage of libraries, directly or indirectly.
+  13          Files may be subject to change without prior notice. The revision history contains the information 
+  14          related to updates. 
+  15           
+  16           
+  17          GNU GENERAL PUBLIC LICENSE: 
+  18              This program is free software: you can redistribute it and/or modify
+  19              it under the terms of the GNU General Public License as published by
+  20              the Free Software Foundation, either version 3 of the License, or
+  21              (at your option) any later version.
+  22          
+  23              This program is distributed in the hope that it will be useful,
+  24              but WITHOUT ANY WARRANTY; without even the implied warranty of
+  25              MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  26              GNU General Public License for more details.
+  27          
+  28              You should have received a copy of the GNU General Public License
+  29              along with this program.  If not, see <http://www.gnu.org/licenses/>. 
+  30           
+  31          Errors and omissions should be reported to codelibraries@exploreembedded.com
+  32          **************************************************************************************************/
+  33           
+  34           
+  35          /***************************************************************************************************
+  36                                       Revision History
+  37          ****************************************************************************************************      
+             -             
+  38          15.0: Initial version 
+  39          ***************************************************************************************************/
+  40          
+  41          
+  42          #include"delay.h"
+  43          /***************************************************************************************************
+  44                                   void DELAY_us(uint16_t us_count)
+  45          ****************************************************************************************************
+  46           * I/P Arguments: uint16_t.
+  47           * Return value    : none
+  48          
+  49           * description :
+  50                   This function is used generate delay in us.
+  51                   It generates a delay of approximate 10us for each count,
+  52                   if 5000 is passed as the argument then it generates a delay of 50ms.          
+  53          
+C51 COMPILER V9.02   DELAY                                                                 02/26/2016 20:44:43 PAGE 2   
+
+  54          ***************************************************************************************************/
+  55          void DELAY_us(uint16_t us_count)
+  56           {    
+  57   1          while(us_count!=0)
+  58   1            {
+  59   2               us_count--;
+  60   2             }
+  61   1       }
+  62          
+  63          
+  64          
+  65          /***************************************************************************************************
+  66                                   void DELAY_ms(uint16_t ms_count)
+  67          ****************************************************************************************************
+  68           * I/P Arguments: uint16_t.
+  69           * Return value    : none
+  70          
+  71           * description:
+  72               This function is used generate delay in ms.
+  73               It generates a delay of 1ms for each count,
+  74               if 1000 is passed as the argument then it generates delay of 1000ms(1sec)
+  75          ***************************************************************************************************/
+  76          void DELAY_ms(uint16_t ms_count)
+  77           {
+  78   1           while(ms_count!=0)
+  79   1            {
+  80   2               DELAY_us(C_CountForOneMsDelay_U16);     //DELAY_us is called to generate 1ms delay
+  81   2                ms_count--;
+  82   2            }
+  83   1      
+  84   1       }
+  85          
+  86          
+  87          
+  88          
+  89          
+  90          
+  91          /***************************************************************************************************
+  92                                  void DELAY_sec(uint16_t sec_count)
+  93          ****************************************************************************************************
+  94            * I/P Arguments: uint16_t.
+  95            * Return value    : none
+  96          
+  97            * description:
+  98                This function is used generate delay in sec .
+  99                It generates a approximate delay of 1sec for each count,
+ 100                if 10 is passed as the argument then it generates delay of 10sec
+ 101          ***************************************************************************************************/
+ 102           #if (ENABLE_DELAY_SEC == 1)
+              void DELAY_sec(uint16_t sec_count)
+               {
+              
+              
+                   while(sec_count!=0)
+                    {
+                       DELAY_ms(1000);    //DELAY_ms is called to generate 1sec delay
+                       sec_count--;
+                      }
+               }
+               #endif
+
+
+C51 COMPILER V9.02   DELAY                                                                 02/26/2016 20:44:43 PAGE 3   
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     35    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

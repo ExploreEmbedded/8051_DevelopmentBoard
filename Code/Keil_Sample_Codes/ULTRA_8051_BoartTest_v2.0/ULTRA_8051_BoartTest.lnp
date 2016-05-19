@@ -1,0 +1,12 @@
+".\adc.obj",
+".\delay.obj",
+".\eeprom.obj",
+".\gpio.obj",
+".\i2c.obj",
+".\keypad.obj",
+".\lcd.obj",
+".\rtc.obj",
+".\uart.obj",
+"main.obj" 
+TO "ULTRA_8051_BoartTest" 
+RAMSIZE(256) 

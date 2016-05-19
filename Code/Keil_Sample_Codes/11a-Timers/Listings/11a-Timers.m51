@@ -1,0 +1,270 @@
+BL51 BANKED LINKER/LOCATER V6.22                                                        05/19/2016  11:28:57  PAGE 1
+
+
+BL51 BANKED LINKER/LOCATER V6.22, INVOKED BY:
+C:\KEIL_V5\C51\BIN\BL51.EXE .\Objects\main.obj, .\Objects\timers.obj TO .\Objects\11a-Timers PRINT (.\Listings\11a-Timer
+>> s.m51) RAMSIZE (256)
+
+
+MEMORY MODEL: SMALL WITH FLOATING POINT ARITHMETIC
+
+
+INPUT MODULES INCLUDED:
+  .\Objects\main.obj (MAIN)
+  .\Objects\timers.obj (TIMERS)
+  C:\KEIL_V5\C51\LIB\C51FPS.LIB (?C?FPADD)
+  C:\KEIL_V5\C51\LIB\C51FPS.LIB (?C?FPMUL)
+  C:\KEIL_V5\C51\LIB\C51FPS.LIB (?C?FPDIV)
+  C:\KEIL_V5\C51\LIB\C51FPS.LIB (?C?FCAST)
+  C:\KEIL_V5\C51\LIB\C51FPS.LIB (?C?CASTF)
+  C:\KEIL_V5\C51\LIB\C51FPS.LIB (?C?FPGETOPN)
+  C:\KEIL_V5\C51\LIB\C51S.LIB (?C_STARTUP)
+  C:\KEIL_V5\C51\LIB\C51S.LIB (?C?LNEG)
+  C:\KEIL_V5\C51\LIB\C51S.LIB (?C?ULCMP)
+  C:\KEIL_V5\C51\LIB\C51S.LIB (?C_INIT)
+
+
+LINK MAP OF MODULE:  .\Objects\11a-Timers (MAIN)
+
+
+            TYPE    BASE      LENGTH    RELOCATION   SEGMENT NAME
+            -----------------------------------------------------
+
+            * * * * * * *   D A T A   M E M O R Y   * * * * * * *
+            REG     0000H     0008H     ABSOLUTE     "REG BANK 0"
+            DATA    0008H     000CH     UNIT         _DATA_GROUP_
+            DATA    0014H     0002H     UNIT         ?DT?_TIMER_GETTIME?TIMERS
+            DATA    0016H     0001H     UNIT         ?DT?MAIN
+            IDATA   0017H     0001H     UNIT         ?STACK
+
+            * * * * * * *   C O D E   M E M O R Y   * * * * * * *
+            CODE    0000H     0003H     ABSOLUTE     
+            CODE    0003H     037CH     UNIT         ?C?LIB_CODE
+            CODE    037FH     008CH     UNIT         ?C_C51STARTUP
+            CODE    040BH     0066H     UNIT         ?PR?MAIN?MAIN
+            CODE    0471H     0049H     UNIT         ?PR?_TIMER_SETTIME?TIMERS
+            CODE    04BAH     0022H     UNIT         ?PR?_TIMER_GETTIME?TIMERS
+            CODE    04DCH     000FH     UNIT         ?PR?_TIMER_INIT?TIMERS
+            CODE    04EBH     0007H     UNIT         ?PR?_TIMER_ATTACHINTERRUPT?TIMERS
+            CODE    04F2H     0004H     UNIT         ?PR?MYTIMERISR_0?MAIN
+            CODE    04F6H     0004H     UNIT         ?PR?MYTIMERISR_1?MAIN
+            CODE    04FAH     0004H     UNIT         ?PR?MYTIMERISR_2?MAIN
+            CODE    04FEH     0004H     UNIT         ?C_INITSEG
+            CODE    0502H     0001H     UNIT         ?PR?_TIMER_START?TIMERS
+            CODE    0503H     0001H     UNIT         ?PR?_TIMER_STOP?TIMERS
+
+
+
+OVERLAY MAP OF MODULE:   .\Objects\11a-Timers (MAIN)
+
+
+SEGMENT                                     DATA_GROUP 
+BL51 BANKED LINKER/LOCATER V6.22                                                      05/19/2016  11:28:57  PAGE 2
+
+
+  +--> CALLED SEGMENT                     START    LENGTH
+---------------------------------------------------------
+?C_C51STARTUP                             -----    -----
+  +--> ?PR?MAIN?MAIN
+  +--> ?C_INITSEG
+
+?PR?MAIN?MAIN                             -----    -----
+  +--> ?PR?_TIMER_INIT?TIMERS
+  +--> ?PR?MYTIMERISR_0?MAIN
+  +--> ?PR?_TIMER_ATTACHINTERRUPT?TIMERS
+  +--> ?PR?_TIMER_START?TIMERS
+  +--> ?PR?MYTIMERISR_1?MAIN
+  +--> ?PR?MYTIMERISR_2?MAIN
+
+?PR?_TIMER_INIT?TIMERS                    0008H    0005H
+  +--> ?PR?_TIMER_SETTIME?TIMERS
+
+?PR?_TIMER_SETTIME?TIMERS                 000DH    0007H
+
+?PR?_TIMER_ATTACHINTERRUPT?TIMERS         0008H    0003H
+
+
+
+SYMBOL TABLE OF MODULE:  .\Objects\11a-Timers (MAIN)
+
+  VALUE           TYPE          NAME
+  ----------------------------------
+
+  -------         MODULE        MAIN
+  C:0000H         SYMBOL        _ICE_DUMMY_
+  D:00A0H         PUBLIC        P2
+  B:00A8H.7       PUBLIC        EA
+  D:00A8H         PUBLIC        IE
+  D:0016H         PUBLIC        value
+  C:040BH         PUBLIC        main
+  C:04F2H         PUBLIC        myTimerIsr_0
+  C:04F6H         PUBLIC        myTimerIsr_1
+  C:04FAH         PUBLIC        myTimerIsr_2
+  D:00C8H         PUBLIC        T2CON
+  -------         PROC          MYTIMERISR_0
+  C:04F2H         LINE#         42
+  C:04F2H         LINE#         43
+  C:04F2H         LINE#         45
+  C:04F5H         LINE#         46
+  -------         ENDPROC       MYTIMERISR_0
+  -------         PROC          MYTIMERISR_1
+  C:04F6H         LINE#         48
+  C:04F6H         LINE#         49
+  C:04F6H         LINE#         50
+  C:04F9H         LINE#         51
+  -------         ENDPROC       MYTIMERISR_1
+  -------         PROC          MYTIMERISR_2
+  C:04FAH         LINE#         53
+  C:04FAH         LINE#         54
+  C:04FAH         LINE#         55
+  C:04FDH         LINE#         56
+  -------         ENDPROC       MYTIMERISR_2
+BL51 BANKED LINKER/LOCATER V6.22                                                      05/19/2016  11:28:57  PAGE 3
+
+
+  -------         PROC          MAIN
+  C:040BH         LINE#         61
+  C:040BH         LINE#         62
+  C:040BH         LINE#         64
+  C:041AH         LINE#         65
+  C:0425H         LINE#         66
+  C:042AH         LINE#         68
+  C:043AH         LINE#         69
+  C:0445H         LINE#         70
+  C:044AH         LINE#         73
+  C:045AH         LINE#         74
+  C:0465H         LINE#         75
+  C:046AH         LINE#         77
+  C:046CH         LINE#         80
+  C:046CH         LINE#         81
+  C:046CH         LINE#         82
+  C:046FH         LINE#         83
+  -------         ENDPROC       MAIN
+  -------         ENDMOD        MAIN
+
+  -------         MODULE        TIMERS
+  C:0000H         SYMBOL        _ICE_DUMMY_
+  C:0503H         PUBLIC        _TIMER_Stop
+  D:00A8H         PUBLIC        IE
+  C:04EBH         PUBLIC        _TIMER_AttachInterrupt
+  C:04BAH         PUBLIC        _TIMER_GetTime
+  C:0471H         PUBLIC        _TIMER_SetTime
+  D:00C8H         PUBLIC        T2CON
+  C:0502H         PUBLIC        _TIMER_Start
+  C:04DCH         PUBLIC        _TIMER_Init
+  -------         PROC          _TIMER_INIT
+  D:0007H         SYMBOL        timerNumber_u8
+  D:0009H         SYMBOL        timerIntervalInUs_u32
+  C:04DCH         LINE#         90
+  C:04DCH         LINE#         91
+  C:04DCH         LINE#         92
+  -------         ENDPROC       _TIMER_INIT
+  -------         PROC          _TIMER_START
+  D:0007H         SYMBOL        timerNumber_u8
+  C:0502H         LINE#         110
+  C:0502H         LINE#         111
+  C:0502H         LINE#         112
+  C:0502H         LINE#         113
+  C:0502H         LINE#         147
+  C:0502H         LINE#         148
+  -------         ENDPROC       _TIMER_START
+  -------         PROC          _TIMER_STOP
+  D:0007H         SYMBOL        timerNumber_u8
+  C:0503H         LINE#         165
+  C:0503H         LINE#         166
+  C:0503H         LINE#         167
+  C:0503H         LINE#         168
+  C:0503H         LINE#         188
+  C:0503H         LINE#         189
+  -------         ENDPROC       _TIMER_STOP
+  -------         PROC          _TIMER_ATTACHINTERRUPT
+  D:0007H         SYMBOL        timerNumber_u8
+BL51 BANKED LINKER/LOCATER V6.22                                                      05/19/2016  11:28:57  PAGE 4
+
+
+  D:0008H         SYMBOL        funPtr
+  C:04EBH         LINE#         209
+  C:04F1H         LINE#         210
+  C:04F1H         LINE#         212
+  C:04F1H         LINE#         213
+  C:04F1H         LINE#         233
+  C:04F1H         LINE#         234
+  -------         ENDPROC       _TIMER_ATTACHINTERRUPT
+  -------         PROC          _TIMER_GETTIME
+  D:0003H         SYMBOL        timerNumber_u8
+  -------         DO            
+  D:0004H         SYMBOL        timerDelay
+  D:0014H         SYMBOL        timerCount
+  -------         ENDDO         
+  C:04BAH         LINE#         251
+  C:04BCH         LINE#         252
+  C:04BCH         LINE#         253
+  C:04C4H         LINE#         254
+  C:04C9H         LINE#         255
+  C:04C9H         LINE#         256
+  C:04C9H         LINE#         291
+  C:04C9H         LINE#         293
+  C:04DBH         LINE#         295
+  C:04DBH         LINE#         296
+  -------         ENDPROC       _TIMER_GETTIME
+  -------         PROC          _TIMER_SETTIME
+  D:000DH         SYMBOL        timerNumber_u8
+  D:000EH         SYMBOL        timerIntervalInUs_u32
+  -------         DO            
+  D:0012H         SYMBOL        reloadValue
+  -------         ENDDO         
+  C:0471H         LINE#         317
+  C:0473H         LINE#         318
+  C:0473H         LINE#         320
+  C:0489H         LINE#         321
+  C:0489H         LINE#         322
+  C:04B9H         LINE#         323
+  C:04B9H         LINE#         324
+  C:04B9H         LINE#         344
+  C:04B9H         LINE#         345
+  C:04B9H         LINE#         346
+  -------         ENDPROC       _TIMER_SETTIME
+  -------         ENDMOD        TIMERS
+
+  -------         MODULE        ?C?FPADD
+  C:000AH         PUBLIC        ?C?FPADD
+  C:0006H         PUBLIC        ?C?FPSUB
+  -------         ENDMOD        ?C?FPADD
+
+  -------         MODULE        ?C?FPMUL
+  C:00FBH         PUBLIC        ?C?FPMUL
+  -------         ENDMOD        ?C?FPMUL
+
+  -------         MODULE        ?C?FPDIV
+  C:0204H         PUBLIC        ?C?FPDIV
+  -------         ENDMOD        ?C?FPDIV
+
+BL51 BANKED LINKER/LOCATER V6.22                                                      05/19/2016  11:28:57  PAGE 5
+
+
+  -------         MODULE        ?C?FCAST
+  C:02ABH         PUBLIC        ?C?FCASTC
+  C:02A6H         PUBLIC        ?C?FCASTI
+  C:02A1H         PUBLIC        ?C?FCASTL
+  -------         ENDMOD        ?C?FCAST
+
+  -------         MODULE        ?C?CASTF
+  C:02DFH         PUBLIC        ?C?CASTF
+  -------         ENDMOD        ?C?CASTF
+
+  -------         MODULE        ?C?LNEG
+  C:0360H         PUBLIC        ?C?LNEG
+  -------         ENDMOD        ?C?LNEG
+
+  -------         MODULE        ?C?ULCMP
+  C:036EH         PUBLIC        ?C?ULCMP
+  -------         ENDMOD        ?C?ULCMP
+
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_TIMER_STOP?TIMERS
+
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_TIMER_GETTIME?TIMERS
+
+Program Size: data=24.0 xdata=0 code=1284
+LINK/LOCATE RUN COMPLETE.  2 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,280 @@
+C51 COMPILER V9.02   PWM                                                                   05/15/2016 00:17:03 PAGE 1   
+
+
+C51 COMPILER V9.02, COMPILATION OF MODULE PWM
+OBJECT MODULE PLACED IN .\Objects\pwm.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE pwm.c OPTIMIZE(8,SPEED) BROWSE INCDIR(..\00-libfiles) DEBUG OBJECTEXTEND
+                    - PRINT(.\Listings\pwm.lst) TABS(2) OBJECT(.\Objects\pwm.obj)
+
+line level    source
+
+   1          /***************************************************************************************************
+   2                                             ExploreEmbedded    
+   3           ****************************************************************************************************
+   4           * File:   pwm.c
+   5           * Version: 16.0
+   6           * Author: ExploreEmbedded
+   7           * Website: http://www.exploreembedded.com/wiki
+   8           * Description: Contains the library function for PWM generation for 8052 series of controllers
+   9                          As 8051/52 doesn't have inbuilt PWM, timer2 is used to generate the max of 2PWM ouputs.
+  10                          These can be enabled/disabled using the constants PWM_0_ENABLE/PWM_1_ENABLE, setting them 
+             -to 1/0 will enable/disable the respective PWMs
+  11                          The PWM output pin can be set using PWM0_PIN/PWM1_PIN.
+  12                          By default the dutycyle is set to 50%.
+  13          
+  14          The libraries have been tested on ExploreEmbedded development boards. We strongly believe that the 
+  15          library works on any of development boards for respective controllers. However, ExploreEmbedded 
+  16          disclaims any kind of hardware failure resulting out of usage of libraries, directly or indirectly.
+  17          Files may be subject to change without prior notice. The revision history contains the information 
+  18          related to updates. 
+  19          
+  20          
+  21          GNU GENERAL PUBLIC LICENSE: 
+  22              This program is free software: you can redistribute it and/or modify
+  23              it under the terms of the GNU General Public License as published by
+  24              the Free Software Foundation, either version 3 of the License, or
+  25              (at your option) any later version.
+  26          
+  27              This program is distributed in the hope that it will be useful,
+  28              but WITHOUT ANY WARRANTY; without even the implied warranty of
+  29              MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  30              GNU General Public License for more details.
+  31          
+  32              You should have received a copy of the GNU General Public License
+  33              along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  34          
+  35          Errors and omissions should be reported to codelibraries@exploreembedded.com
+  36           **************************************************************************************************/
+  37          #include <reg51.h>
+  38          #include "pwm.h"
+  39          #include "stdutils.h"
+  40          
+  41          
+  42          
+  43          #if (PWM_0_ENABLE == 1)
+  44          uint8_t v_Pwm0_DutyCycle_U8=50;
+  45          uint8_t v_Pwm0_Enabled_U8=0;
+  46          #endif
+  47          
+  48          #if (PWM_1_ENABLE == 1)
+  49          uint8_t v_Pwm1_DutyCycle_U8=50;
+  50          uint8_t v_Pwm1_Enabled_U8=0;
+  51          #endif
+  52          
+  53          
+C51 COMPILER V9.02   PWM                                                                   05/15/2016 00:17:03 PAGE 2   
+
+  54          /***************************************************************************************************
+  55                                  void PWM_Init(void)
+  56           ****************************************************************************************************
+  57           * I/P Arguments   : none
+  58           * Return value    : none
+  59          
+  60           * description :This function initializes the Timer2 module for generating the PWM using timers.
+  61           ***************************************************************************************************/
+  62          void PWM_Init(void)
+  63          {
+  64   1          RCAP2L = 200;  // Load the lower 8-bits of timer value
+  65   1          RCAP2H = 0xFF; // Load the higher 8-bits of timer value
+  66   1          ET2 = 1;       // Enable the Interrupt
+  67   1      }
+  68          
+  69          
+  70          
+  71          
+  72          
+  73          
+  74          
+  75          /***************************************************************************************************
+  76                                   void PWM_SetDutyCycle( uint8_t channel, uint8_t dutyCycle )
+  77           ****************************************************************************************************
+  78           * I/P Arguments: uint8_t: channel number at which PWM needs to be generated.(0/1).
+  79                            uint8_t : required dutyCycle at the pwm pin(0-100).
+  80           * Return value    : none
+  81          
+  82           * description :This function is used the set the duty cycle for the required channel.
+  83                          Ensure the PWM_Init() function is called before calling this function.
+  84                          This function only sets the duty cycle, the actual PWM generation satarts after calling PW
+             -M_Start().
+  85          
+  86          Note: By default the dutycyle is set to 50%.
+  87           ***************************************************************************************************/
+  88          void PWM_SetDutyCycle(uint8_t channel,uint8_t dutyCycle)
+  89          {
+  90   1          if(dutyCycle>100)
+  91   1              dutyCycle = 100;
+  92   1      
+  93   1          switch (channel)
+  94   1          {
+  95   2      #if (PWM_0_ENABLE == 1)
+  96   2          case 0 :
+  97   2              v_Pwm0_DutyCycle_U8 = dutyCycle;
+  98   2              break;
+  99   2      #endif
+ 100   2      
+ 101   2      
+ 102   2      #if (PWM_1_ENABLE == 1)
+ 103   2          case 1 :
+ 104   2              v_Pwm1_DutyCycle_U8 = dutyCycle;
+ 105   2              break;
+ 106   2      #endif
+ 107   2          }
+ 108   1      }
+ 109          
+ 110          
+ 111          
+ 112          
+ 113          
+ 114          
+C51 COMPILER V9.02   PWM                                                                   05/15/2016 00:17:03 PAGE 3   
+
+ 115          /***************************************************************************************************
+ 116                                   void PWM_Start(uint8_t channel)
+ 117           ****************************************************************************************************
+ 118           * I/P Arguments: none.
+ 119           * Return value    : none
+ 120          
+ 121           * description :This function is used to start the pwm generation for the required channel.
+ 122           ***************************************************************************************************/
+ 123          void PWM_Start(uint8_t channel)
+ 124          {
+ 125   1          switch (channel)
+ 126   1          {
+ 127   2      #if (PWM_0_ENABLE == 1)
+ 128   2          case 0 :
+ 129   2              v_Pwm0_Enabled_U8 = 1;
+ 130   2              TR2 = 1;  // Start Timer
+ 131   2              EnableGlobalInterrupts();
+ 132   2              break;
+ 133   2      #endif
+ 134   2      
+ 135   2      
+ 136   2      #if (PWM_1_ENABLE == 1)
+ 137   2          case 1 :
+ 138   2              v_Pwm1_Enabled_U8 = 1;
+ 139   2              TR2 = 1;  // Start Timer
+ 140   2              EnableGlobalInterrupts();
+ 141   2              break;
+ 142   2      #endif
+ 143   2          }
+ 144   1      }
+ 145          
+ 146          
+ 147          
+ 148          
+ 149          /***************************************************************************************************
+ 150                                   void PWM_Start(uint8_t channel)
+ 151           ****************************************************************************************************
+ 152           * I/P Arguments: none.
+ 153           * Return value    : none
+ 154          
+ 155           * description :This function is used to stop the pwm generation for the required channel.
+ 156           ***************************************************************************************************/
+ 157          void PWM_Stop(uint8_t channel)
+ 158          {
+ 159   1          uint8_t pwmEnableDisable=0;
+ 160   1          switch (channel)
+ 161   1          {
+ 162   2      #if (PWM_0_ENABLE == 1)
+ 163   2          case 0 :
+ 164   2              v_Pwm0_Enabled_U8 = 0;
+ 165   2              break;
+ 166   2      #endif
+ 167   2      
+ 168   2      
+ 169   2      #if (PWM_1_ENABLE == 1)
+ 170   2          case 1 :
+ 171   2              v_Pwm1_Enabled_U8 = 0;
+ 172   2              break;
+ 173   2      #endif
+ 174   2          }
+ 175   1      
+ 176   1      #if (PWM_0_ENABLE == 1)
+C51 COMPILER V9.02   PWM                                                                   05/15/2016 00:17:03 PAGE 4   
+
+ 177   1          pwmEnableDisable|=v_Pwm0_Enabled_U8;
+ 178   1      #endif
+ 179   1      
+ 180   1      #if (PWM_1_ENABLE == 1)
+ 181   1          pwmEnableDisable|=v_Pwm1_Enabled_U8;
+ 182   1      #endif
+ 183   1      
+ 184   1          TR2 = pwmEnableDisable; // Keep the Timer2 Running as long as one of the PWM is enabled
+ 185   1      }
+ 186          
+ 187          
+ 188          
+ 189          
+ 190          
+ 191          
+ 192          
+ 193          
+ 194          /***************************************************************************************************
+ 195                                   timer2_isr()
+ 196           ****************************************************************************************************
+ 197           * I/P Arguments: none.
+ 198           * Return value    : none
+ 199          
+ 200           * description :This is the timer2 ISR used for generating the PWM.
+ 201           ***************************************************************************************************/
+ 202          #if ((PWM_0_ENABLE == 1) || (PWM_1_ENABLE == 1))
+ 203          volatile uint8_t cycleTime =0;
+ 204          void timer2_isr() interrupt 5
+ 205          {
+ 206   1          TF2 = 0;             //CLear the Interrupt Flag
+ 207   1      
+ 208   1          if(cycleTime >= 100) // Maintain the CycleTime between 0-100 
+ 209   1          {
+ 210   2              cycleTime = 0;
+ 211   2          }
+ 212   1          else
+ 213   1          {
+ 214   2              cycleTime++;
+ 215   2          }
+ 216   1      
+ 217   1      #if (PWM_0_ENABLE == 1)
+ 218   1          if(v_Pwm0_Enabled_U8 == 1)  
+ 219   1          {
+ 220   2              if(cycleTime == v_Pwm0_DutyCycle_U8)  // If the DutyCycle is met then make the pin zero.
+ 221   2              {
+ 222   3                  PWM0_PIN = 0;
+ 223   3              }
+ 224   2              else if(cycleTime == 0)
+ 225   2              {
+ 226   3                  PWM0_PIN = 1;                     // Make pin high when the cycle time reaches zero
+ 227   3              }
+ 228   2          }
+ 229   1      #endif
+ 230   1      
+ 231   1      
+ 232   1      #if (PWM_1_ENABLE == 1)
+ 233   1          if(v_Pwm1_Enabled_U8 == 1)
+ 234   1          {
+ 235   2              if(cycleTime == v_Pwm1_DutyCycle_U8)
+ 236   2              {
+ 237   3                  PWM1_PIN = 0;
+ 238   3              }
+C51 COMPILER V9.02   PWM                                                                   05/15/2016 00:17:03 PAGE 5   
+
+ 239   2              else if(cycleTime == 0)
+ 240   2              {
+ 241   3                  PWM1_PIN = 1;
+ 242   3              }
+ 243   2          }
+ 244   1      #endif
+ 245   1      }
+ 246          #endif
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    146    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      5    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

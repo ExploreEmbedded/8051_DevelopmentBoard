@@ -1,0 +1,182 @@
+C51 COMPILER V9.02   RTC                                                                   02/26/2016 20:44:44 PAGE 1   
+
+
+C51 COMPILER V9.02, COMPILATION OF MODULE RTC
+OBJECT MODULE PLACED IN .\Objects\rtc.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE ..\00-libfiles\rtc.c OPTIMIZE(8,SPEED) BROWSE INCDIR(..\00-libfiles) DEB
+                    -UG OBJECTEXTEND PRINT(.\Listings\rtc.lst) TABS(2) OBJECT(.\Objects\rtc.obj)
+
+line level    source
+
+   1          /***************************************************************************************************
+   2                                             ExploreEmbedded    
+   3          ****************************************************************************************************
+   4           * File:   rtc.c
+   5           * Version: 15.0
+   6           * Author: ExploreEmbedded
+   7           * Website: http://www.exploreembedded.com/wiki
+   8           * Description: Contains the library functions for RTC-Ds1307 date and time read write
+   9          
+  10          The libraries have been tested on ExploreEmbedded development boards. We strongly believe that the 
+  11          library works on any of development boards for respective controllers. However, ExploreEmbedded 
+  12          disclaims any kind of hardware failure resulting out of usage of libraries, directly or indirectly.
+  13          Files may be subject to change without prior notice. The revision history contains the information 
+  14          related to updates. 
+  15          
+  16          
+  17          GNU GENERAL PUBLIC LICENSE: 
+  18              This program is free software: you can redistribute it and/or modify
+  19              it under the terms of the GNU General Public License as published by
+  20              the Free Software Foundation, either version 3 of the License, or
+  21              (at your option) any later version.
+  22          
+  23              This program is distributed in the hope that it will be useful,
+  24              but WITHOUT ANY WARRANTY; without even the implied warranty of
+  25              MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  26              GNU General Public License for more details.
+  27          
+  28              You should have received a copy of the GNU General Public License
+  29              along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  30          
+  31          Errors and omissions should be reported to codelibraries@exploreembedded.com
+  32          ***************************************************************************************************/
+  33          
+  34          
+  35          
+  36          /***************************************************************************************************
+  37                                       Revision History
+  38          ****************************************************************************************************
+  39          15.0: Initial version 
+  40          ***************************************************************************************************/
+  41          
+  42          #include "rtc.h"
+  43          #include "i2c.h"
+  44          
+  45          
+  46          
+  47          
+  48          
+  49          /***************************************************************************************************
+  50                                   void RTC_Init(void)
+  51          ****************************************************************************************************
+  52           * I/P Arguments: none.
+  53           * Return value    : none
+  54          
+C51 COMPILER V9.02   RTC                                                                   02/26/2016 20:44:44 PAGE 2   
+
+  55           * description :This function is used to Initialize the Ds1307 RTC.
+  56          ***************************************************************************************************/
+  57          void RTC_Init(void)
+  58          {
+  59   1          I2C_Init();                             // Initialize the I2c module.
+  60   1          I2C_Start();                            // Start I2C communication
+  61   1      
+  62   1          I2C_Write(C_Ds1307WriteMode_U8);        // Connect to DS1307 by sending its ID on I2c Bus
+  63   1          I2C_Write(C_Ds1307ControlRegAddress_U8);// Select the Ds1307 ControlRegister to configure Ds1307
+  64   1      
+  65   1          I2C_Write(0x00);                        // Write 0x00 to Control register to disable SQW-Out
+  66   1      
+  67   1          I2C_Stop();                             // Stop I2C communication after initializing DS1307
+  68   1      }
+  69          
+  70          
+  71          
+  72          
+  73          
+  74          
+  75          
+  76          
+  77          
+  78          
+  79          
+  80          
+  81          
+  82          
+  83          /***************************************************************************************************
+  84                              void RTC_SetDateTime(rtc_t *rtc)
+  85          ****************************************************************************************************
+  86           * I/P Arguments: rtc_t *: Pointer to structure of type rtc_t. Structure contains hour,min,sec,day,date,mo
+             -nth and year 
+  87           * Return value    : none
+  88          
+  89           * description  :This function is used to update the Date and time of Ds1307 RTC.
+  90                           The new Date and time will be updated into the non volatile memory of Ds1307.
+  91                  Note: The date and time should be of BCD format, 
+  92                       like 0x12,0x39,0x26 for 12hr,39min and 26sec.    
+  93                            0x15,0x08,0x47 for 15th day,8th month and 47th year.                 
+  94          ***************************************************************************************************/
+  95          void RTC_SetDateTime(rtc_t *rtc)
+  96          {
+  97   1          I2C_Start();                          // Start I2C communication
+  98   1      
+  99   1          I2C_Write(C_Ds1307WriteMode_U8);      // connect to DS1307 by sending its ID on I2c Bus
+ 100   1          I2C_Write(C_Ds1307SecondRegAddress_U8); // Request sec RAM address at 00H
+ 101   1      
+ 102   1          I2C_Write(rtc->sec);                    // Write sec from RAM address 00H
+ 103   1          I2C_Write(rtc->min);                    // Write min from RAM address 01H
+ 104   1          I2C_Write(rtc->hour);                    // Write hour from RAM address 02H
+ 105   1          I2C_Write(rtc->weekDay);                // Write weekDay on RAM address 03H
+ 106   1          I2C_Write(rtc->date);                    // Write date on RAM address 04H
+ 107   1          I2C_Write(rtc->month);                    // Write month on RAM address 05H
+ 108   1          I2C_Write(rtc->year);                    // Write year on RAM address 06h
+ 109   1      
+ 110   1          I2C_Stop();                              // Stop I2C communication after Setting the Date
+ 111   1      }
+ 112          
+ 113          
+ 114          
+ 115          
+C51 COMPILER V9.02   RTC                                                                   02/26/2016 20:44:44 PAGE 3   
+
+ 116          
+ 117          
+ 118          
+ 119          /***************************************************************************************************
+ 120                               void RTC_GetDateTime(rtc_t *rtc)
+ 121          ****************************************************************************************************
+ 122           * I/P Arguments: rtc_t *: Pointer to structure of type rtc_t. Structure contains hour,min,sec,day,date,mo
+             -nth and year 
+ 123           * Return value    : none
+ 124          
+ 125           * description  :This function is used to get the Date(d,m,y) from Ds1307 RTC.
+ 126          
+ 127              Note: The date and time read from Ds1307 will be of BCD format, 
+ 128                    like 0x12,0x39,0x26 for 12hr,39min and 26sec.    
+ 129                         0x15,0x08,0x47 for 15th day,8th month and 47th year.              
+ 130          ***************************************************************************************************/
+ 131          void RTC_GetDateTime(rtc_t *rtc)
+ 132          {
+ 133   1          I2C_Start();                            // Start I2C communication
+ 134   1      
+ 135   1          I2C_Write(C_Ds1307WriteMode_U8);        // connect to DS1307 by sending its ID on I2c Bus
+ 136   1          I2C_Write(C_Ds1307SecondRegAddress_U8); // Request Sec RAM address at 00H
+ 137   1      
+ 138   1          I2C_Stop();                                // Stop I2C communication after selecting Sec Register
+ 139   1      
+ 140   1          I2C_Start();                            // Start I2C communication
+ 141   1          I2C_Write(C_Ds1307ReadMode_U8);            // connect to DS1307(Read mode) by sending its ID
+ 142   1      
+ 143   1          rtc->sec = I2C_Read(1);                // read second and return Positive ACK
+ 144   1          rtc->min = I2C_Read(1);                 // read minute and return Positive ACK
+ 145   1          rtc->hour= I2C_Read(1);               // read hour and return Negative/No ACK
+ 146   1          rtc->weekDay = I2C_Read(1);           // read weekDay and return Positive ACK
+ 147   1          rtc->date= I2C_Read(1);              // read Date and return Positive ACK
+ 148   1          rtc->month=I2C_Read(1);            // read Month and return Positive ACK
+ 149   1          rtc->year =I2C_Read(0);             // read Year and return Negative/No ACK
+ 150   1      
+ 151   1          I2C_Stop();                              // Stop I2C communication after reading the Date
+ 152   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    311    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       6
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,6 @@
+".\Objects\main.obj",
+".\Objects\delay.obj",
+".\Objects\gpio.obj",
+".\Objects\lcd.obj" 
+TO ".\Objects\04c-Lcd_8bit_Scrolling" 
+PRINT(".\Listings\04c-Lcd_8bit_Scrolling.m51") RAMSIZE(256) 

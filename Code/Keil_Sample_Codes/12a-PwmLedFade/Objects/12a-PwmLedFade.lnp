@@ -1,0 +1,5 @@
+".\Objects\main.obj",
+".\Objects\pwm.obj",
+".\Objects\delay.obj" 
+TO ".\Objects\12a-PwmLedFade" 
+PRINT(".\Listings\12a-PwmLedFade.m51") RAMSIZE(256) 

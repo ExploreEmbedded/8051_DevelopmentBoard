@@ -1,0 +1,8 @@
+".\Objects\main.obj",
+".\Objects\delay.obj",
+".\Objects\gpio.obj",
+".\Objects\i2c.obj",
+".\Objects\lcd.obj",
+".\Objects\rtc.obj" 
+TO ".\Objects\09b-RTC_DS1307_LCD" 
+PRINT(".\Listings\09b-RTC_DS1307_LCD.m51") RAMSIZE(256) 

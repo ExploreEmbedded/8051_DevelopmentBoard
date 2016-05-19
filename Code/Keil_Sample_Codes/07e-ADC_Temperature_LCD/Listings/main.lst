@@ -1,0 +1,97 @@
+C51 COMPILER V9.02   MAIN                                                                  02/26/2016 20:37:21 PAGE 1   
+
+
+C51 COMPILER V9.02, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE INCDIR(..\00-libfiles) DEBUG OBJECTEXTEN
+                    -D PRINT(.\Listings\main.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          /***************************************************************************************************
+   2                                             ExploreEmbedded
+   3          ****************************************************************************************************
+   4           * File:   main.c
+   5           * Version: 16.0
+   6           * Author: ExploreEmbedded
+   7           * Website: http://www.exploreembedded.com/wiki
+   8           * Description: This file contains the program to read the temperature(LM35) from ADC channel 0 and displa
+             -y it on LCD.
+   9          
+  10          The libraries have been tested on ExploreEmbedded development boards. We strongly believe that the
+  11          library works on any of development boards for respective controllers. However, ExploreEmbedded
+  12          disclaims any kind of hardware failure resulting out of usage of libraries, directly or indirectly.
+  13          Files may be subject to change without prior notice. The revision history contains the information
+  14          related to updates.
+  15          
+  16          
+  17          GNU GENERAL PUBLIC LICENSE:
+  18              Copyright (C) 2012  ExploreEmbedded
+  19          
+  20              This program is free software: you can redistribute it and/or modify
+  21              it under the terms of the GNU General Public License as published by
+  22              the Free Software Foundation, either version 3 of the License, or
+  23              (at your option) any later version.
+  24          
+  25              This program is distributed in the hope that it will be useful,
+  26              but WITHOUT ANY WARRANTY; without even the implied warranty of
+  27              MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  28              GNU General Public License for more details.
+  29          
+  30              You should have received a copy of the GNU General Public License
+  31              along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  32          
+  33          
+  34          Errors and omissions should be reported to codelibraries@exploreembedded.com
+  35          **************************************************************************************************/
+  36          #include "adc.h"
+  37          #include "lcd.h"
+  38          
+  39          
+  40          
+  41          int main() 
+  42          {
+  43   1          int adcValue;
+  44   1          int temp;
+  45   1          
+  46   1          ADC_Init();       /* Initialize the ADC module */
+  47   1          
+  48   1          /*Connect RS->P0.0, RW->P0.1, EN->P0.2 and data bus to P0.4 to P0.7*/
+  49   1          LCD_SetUp(P0_0,P0_1,P0_2,P_NC,P_NC,P_NC,P_NC,P0_4,P0_5,P0_6,P0_7);
+  50   1          LCD_Init(2,16);
+  51   1          
+  52   1          while(1)
+  53   1          {
+C51 COMPILER V9.02   MAIN                                                                  02/26/2016 20:37:21 PAGE 2   
+
+  54   2              adcValue = ADC_GetAdcValue(0); // Read the ADC value of channel zero where the temperature sensor(
+             -LM35) is connected
+  55   2              
+  56   2              /* Convert the raw ADC value to equivalent temperature with 5v as ADC reference
+  57   2                 Step size of AdC= (5v/255)=19.60mv = 20mv.
+  58   2                 for every degree celcius the Lm35 provides 10mv voltage change.
+  59   2                 1 step of ADC=20mv=2'c, hence the Raw ADC value can be multiplied by 2 to get equivalent temp*/
+  60   2              
+  61   2              temp = adcValue*2; // Multiple by 2 to get the temp value.
+  62   2              LCD_GoToLine(0);
+  63   2              LCD_Printf("ADC0 Value:%3d \nTemp:%2d\n\r",adcValue,temp);     // Display adc value and temp LCD
+  64   2          }
+  65   1          
+  66   1          return (0);
+  67   1      }
+  68          
+  69          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     91    ----
+   CONSTANT SIZE    =     27    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       4
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

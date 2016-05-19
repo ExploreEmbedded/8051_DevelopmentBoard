@@ -1,0 +1,3 @@
+".\Objects\main.obj" 
+TO ".\Objects\03b-SevenSegmentFourDigit" 
+PRINT(".\Listings\03b-SevenSegmentFourDigit.m51") RAMSIZE(256) 

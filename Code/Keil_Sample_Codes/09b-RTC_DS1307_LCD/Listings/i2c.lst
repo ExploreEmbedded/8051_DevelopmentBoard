@@ -1,0 +1,331 @@
+C51 COMPILER V9.02   I2C                                                                   02/26/2016 20:44:44 PAGE 1   
+
+
+C51 COMPILER V9.02, COMPILATION OF MODULE I2C
+OBJECT MODULE PLACED IN .\Objects\i2c.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE ..\00-libfiles\i2c.c OPTIMIZE(8,SPEED) BROWSE INCDIR(..\00-libfiles) DEB
+                    -UG OBJECTEXTEND PRINT(.\Listings\i2c.lst) TABS(2) OBJECT(.\Objects\i2c.obj)
+
+line level    source
+
+   1          /***************************************************************************************************
+   2                                             ExploreEmbedded    
+   3          ****************************************************************************************************
+   4           * File:   i2c.h
+   5           * Version: 15.0
+   6           * Author: ExploreEmbedded
+   7           * Website: http://www.exploreembedded.com/wiki
+   8           * Description: Contains the library routines for I2C read,write operation
+   9          
+  10          The libraries have been tested on ExploreEmbedded development boards. We strongly believe that the 
+  11          library works on any of development boards for respective controllers. However, ExploreEmbedded 
+  12          disclaims any kind of hardware failure resulting out of usage of libraries, directly or indirectly.
+  13          Files may be subject to change without prior notice. The revision history contains the information 
+  14          related to updates. 
+  15          
+  16          
+  17          GNU GENERAL PUBLIC LICENSE: 
+  18              This program is free software: you can redistribute it and/or modify
+  19              it under the terms of the GNU General Public License as published by
+  20              the Free Software Foundation, either version 3 of the License, or
+  21              (at your option) any later version.
+  22          
+  23              This program is distributed in the hope that it will be useful,
+  24              but WITHOUT ANY WARRANTY; without even the implied warranty of
+  25              MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  26              GNU General Public License for more details.
+  27          
+  28              You should have received a copy of the GNU General Public License
+  29              along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  30          
+  31          Errors and omissions should be reported to codelibraries@exploreembedded.com
+  32          ***************************************************************************************************/
+  33          
+  34          
+  35          
+  36          
+  37          /***************************************************************************************************
+  38                                       Revision History
+  39          ****************************************************************************************************
+  40          15.0: Initial version 
+  41          ***************************************************************************************************/
+  42          
+  43          #include "delay.h"
+  44          #include "i2c.h"
+  45          
+  46          
+  47          /***************************************************************************************************
+  48                                    Local Function declaration
+  49          ***************************************************************************************************/      
+             -                    
+  50          static void i2c_Clock(void);
+  51          static void i2c_Ack(void);
+  52          static void i2c_NoAck(void);
+  53          /**************************************************************************************************/
+C51 COMPILER V9.02   I2C                                                                   02/26/2016 20:44:44 PAGE 2   
+
+  54          
+  55          
+  56          
+  57          
+  58          
+  59          
+  60          
+  61          /***************************************************************************************************
+  62                                   void I2C_Init(void)
+  63          ****************************************************************************************************
+  64           * I/P Arguments: none.
+  65           * Return value  : none
+  66          
+  67           * description  :This function is used to initialize the I2C module.
+  68          ***************************************************************************************************/
+  69           void I2C_Init(void)
+  70           {
+  71   1       
+  72   1       }
+  73           
+  74           
+  75           
+  76           
+  77          
+  78          /***************************************************************************************************
+  79                                   void I2C_Start(void)
+  80          ****************************************************************************************************
+  81           * I/P Arguments: none.
+  82           * Return value  : none
+  83          
+  84           * description  :This function is used to generate I2C Start Condition.
+  85                           Start Condition: SDA goes low when SCL is High.
+  86          
+  87                                         ____________
+  88                          SCL:          |            |
+  89                                ________|            |______
+  90                                     _________
+  91                          SDA:      |         |
+  92                                ____|         |____________
+  93          
+  94          ***************************************************************************************************/
+  95          void I2C_Start(void)
+  96          {
+  97   1          SCL_PIN = 0;        // Pull SCL low
+  98   1          SDA_PIN = 1;        // Pull SDA High
+  99   1          DELAY_us(1);
+ 100   1          SCL_PIN = 1;        //Pull SCL high
+ 101   1          DELAY_us(1);
+ 102   1          SDA_PIN = 0;        //Now Pull SDA LOW, to generate the Start Condition
+ 103   1          DELAY_us(1);
+ 104   1          SCL_PIN = 0;        //Finally Clear the SCL to complete the cycle
+ 105   1      }
+ 106          
+ 107          
+ 108          
+ 109          
+ 110          
+ 111          /***************************************************************************************************
+ 112                                   void I2C_Stop(void)
+ 113          ****************************************************************************************************
+ 114           * I/P Arguments: none.
+ 115           * Return value  : none
+C51 COMPILER V9.02   I2C                                                                   02/26/2016 20:44:44 PAGE 3   
+
+ 116          
+ 117           * description  :This function is used to generate I2C Stop Condition.
+ 118                           Stop Condition: SDA goes High when SCL is High.
+ 119          
+ 120                                         ____________
+ 121                          SCL:          |            |
+ 122                                ________|            |______
+ 123                                           _________________
+ 124                          SDA:            |
+ 125                                __________|
+ 126          
+ 127          ***************************************************************************************************/
+ 128          
+ 129          void I2C_Stop(void)
+ 130          {
+ 131   1          SCL_PIN = 0;            // Pull SCL low
+ 132   1          DELAY_us(1);
+ 133   1          SDA_PIN = 0;            // Pull SDA  low
+ 134   1          DELAY_us(1);
+ 135   1          SCL_PIN = 1;            // Pull SCL High
+ 136   1          DELAY_us(1);
+ 137   1          SDA_PIN = 1;            // Now Pull SDA High, to generate the Stop Condition
+ 138   1      }
+ 139          
+ 140          
+ 141          
+ 142          
+ 143          
+ 144          
+ 145          
+ 146          
+ 147          /***************************************************************************************************
+ 148                                   void I2C_Write(uint8_t v_i2cData_u8)
+ 149          ****************************************************************************************************
+ 150           * I/P Arguments: uint8_t-->8bit data to be sent.
+ 151           * Return value  : none
+ 152          
+ 153           * description  :This function is used to send a byte on SDA line using I2C protocol
+ 154                           8bit data is sent bit-by-bit on each clock cycle.
+ 155                           MSB(bit) is sent first and LSB(bit) is sent at last.
+ 156                           Data is sent when SCL is low.
+ 157          
+ 158                   ___     ___     ___     ___     ___     ___     ___     ___     ___     ___
+ 159           SCL:   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |
+ 160                __|   |___|   |___|   |___|   |___|   |___|   |___|   |___|   |___|   |___|   |___
+ 161          
+ 162           SDA:    D8       D7     D6      D5      D4       D3      D2      D1      D0     ACK
+ 163          
+ 164          
+ 165          ***************************************************************************************************/
+ 166          void I2C_Write(uint8_t v_i2cData_u8)
+ 167          {
+ 168   1          uint8_t i;
+ 169   1      
+ 170   1          for(i=0;i<8;i++)                   // loop 8 times to send 1-byte of data
+ 171   1          {
+ 172   2              SDA_PIN = v_i2cData_u8 & 0x80;     // Send Bit by Bit on SDA line
+ 173   2              i2c_Clock();                   // Generate Clock at SCL
+ 174   2              v_i2cData_u8 = v_i2cData_u8<<1;// Bring the next bit to be transmitted to MSB position
+ 175   2          }
+ 176   1                                   
+ 177   1          i2c_Clock();
+C51 COMPILER V9.02   I2C                                                                   02/26/2016 20:44:44 PAGE 4   
+
+ 178   1      }
+ 179          
+ 180          
+ 181          
+ 182          
+ 183          
+ 184          
+ 185          /***************************************************************************************************
+ 186                                   uint8_t I2C_Read(uint8_t v_ackOption_u8)
+ 187          ****************************************************************************************************
+ 188           * I/P Arguments: none.
+ 189           * Return value  : uint8_t(received byte)
+ 190          
+ 191           * description :This fun is used to receive a byte on SDA line using I2C protocol.
+ 192                         8bit data is received bit-by-bit each clock and finally packed into Byte.
+ 193                         MSB(bit) is received first and LSB(bit) is received at last.
+ 194          
+ 195          
+ 196                   ___     ___     ___     ___     ___     ___     ___     ___     ___     ___
+ 197          SCL:    |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |
+ 198                __|   |___|   |___|   |___|   |___|   |___|   |___|   |___|   |___|   |___|   |__
+ 199          
+ 200           SDA:    D8       D7     D6      D5       D4     D3       D2      D1     D0      ACK
+ 201          
+ 202          
+ 203          ***************************************************************************************************/
+ 204          uint8_t I2C_Read(uint8_t v_ackOption_u8)
+ 205          {
+ 206   1          uint8_t i, v_i2cData_u8=0x00;
+ 207   1      
+ 208   1          SDA_PIN =1;               //Make SDA as I/P
+ 209   1          for(i=0;i<8;i++)     // loop 8times read 1-byte of data
+ 210   1          {
+ 211   2              DELAY_us(1);
+ 212   2              SCL_PIN = 1;         // Pull SCL High
+ 213   2              DELAY_us(1);
+ 214   2      
+ 215   2              v_i2cData_u8 = v_i2cData_u8<<1;    //v_i2cData_u8 is Shifted each time and
+ 216   2              v_i2cData_u8 = v_i2cData_u8 | SDA_PIN; //ORed with the received bit to pack into byte
+ 217   2      
+ 218   2              SCL_PIN = 0;         // Clear SCL to complete the Clock
+ 219   2          }
+ 220   1          if(v_ackOption_u8==1)  /*Send the Ack/NoAck depending on the user option*/
+ 221   1          {
+ 222   2              i2c_Ack();
+ 223   2          }
+ 224   1          else
+ 225   1          {
+ 226   2              i2c_NoAck();
+ 227   2          }
+ 228   1      
+ 229   1          return v_i2cData_u8;           // Finally return the received Byte*
+ 230   1      }
+ 231          
+ 232          
+ 233          
+ 234          
+ 235          
+ 236          
+ 237          /***************************************************************************************************
+ 238                                          Local functions
+ 239          ***************************************************************************************************/
+C51 COMPILER V9.02   I2C                                                                   02/26/2016 20:44:44 PAGE 5   
+
+ 240                                          
+ 241          
+ 242          /***************************************************************************************************
+ 243                                   static void i2c_Clock()
+ 244          ****************************************************************************************************
+ 245           * I/P Arguments: none.
+ 246           * Return value  : none
+ 247          
+ 248           * description  :This function is used to generate a clock pulse on SCL line.
+ 249          ***************************************************************************************************/
+ 250          static void i2c_Clock(void)
+ 251          {
+ 252   1          DELAY_us(1);
+ 253   1          SCL_PIN = 1;            // Wait for Some time and Pull the SCL line High
+ 254   1          DELAY_us(1);        // Wait for Some time
+ 255   1          SCL_PIN = 0;            // Pull back the SCL line low to Generate a clock pulse
+ 256   1      }
+ 257          
+ 258          
+ 259          
+ 260          
+ 261          
+ 262          /***************************************************************************************************
+ 263                                   static void i2c_Ack()
+ 264          ****************************************************************************************************
+ 265           * I/P Arguments: none.
+ 266           * Return value  : none
+ 267          
+ 268           * description  :This function is used to generate a the Positive ACK
+ 269                           pulse on SDA after receiving a byte.
+ 270          ***************************************************************************************************/
+ 271          static void i2c_Ack(void)
+ 272          {
+ 273   1          SDA_PIN = 0;        //Pull SDA low to indicate Positive ACK
+ 274   1          i2c_Clock();    //Generate the Clock
+ 275   1          SDA_PIN = 1;        // Pull SDA back to High(IDLE state)
+ 276   1      }
+ 277          
+ 278          
+ 279          
+ 280          
+ 281          
+ 282          /***************************************************************************************************
+ 283                                  static void i2c_NoAck()
+ 284          ****************************************************************************************************
+ 285           * I/P Arguments: none.
+ 286           * Return value  : none
+ 287          
+ 288           * description  :This function is used to generate a the Negative/NO ACK
+ 289                           pulse on SDA after receiving all bytes.
+ 290          ***************************************************************************************************/
+ 291          static void i2c_NoAck(void)
+ 292          {
+ 293   1          SDA_PIN = 1;         //Pull SDA high to indicate Negative/NO ACK
+ 294   1          i2c_Clock();     // Generate the Clock  
+ 295   1          SCL_PIN = 1;         // Set SCL 
+ 296   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    193    ----
+   CONSTANT SIZE    =   ----    ----
+C51 COMPILER V9.02   I2C                                                                   02/26/2016 20:44:44 PAGE 6   
+
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       5
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

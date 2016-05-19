@@ -1,0 +1,6 @@
+".\Objects\main.obj",
+".\Objects\adc.obj",
+".\Objects\delay.obj",
+".\Objects\uart.obj" 
+TO ".\Objects\07c-ADC_LM35_TempSensor" 
+PRINT(".\Listings\07c-ADC_LM35_TempSensor.m51") RAMSIZE(256) 

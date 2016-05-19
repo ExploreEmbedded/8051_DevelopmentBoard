@@ -1,0 +1,6 @@
+".\Objects\main.obj",
+".\Objects\adc.obj",
+".\Objects\delay.obj",
+".\Objects\uart.obj" 
+TO ".\Objects\07a-ADC_UART" 
+PRINT(".\Listings\07a-ADC_UART.m51") RAMSIZE(256) 

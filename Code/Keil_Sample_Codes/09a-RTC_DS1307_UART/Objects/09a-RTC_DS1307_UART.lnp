@@ -1,0 +1,7 @@
+".\Objects\main.obj",
+".\Objects\delay.obj",
+".\Objects\i2c.obj",
+".\Objects\rtc.obj",
+".\Objects\uart.obj" 
+TO ".\Objects\09a-RTC_DS1307_UART" 
+PRINT(".\Listings\09a-RTC_DS1307_UART.m51") RAMSIZE(256) 

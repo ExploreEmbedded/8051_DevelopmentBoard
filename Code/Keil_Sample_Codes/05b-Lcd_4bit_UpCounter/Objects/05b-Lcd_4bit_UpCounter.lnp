@@ -1,0 +1,6 @@
+".\Objects\main.obj",
+".\Objects\delay.obj",
+".\Objects\gpio.obj",
+".\Objects\lcd.obj" 
+TO ".\Objects\05b-Lcd_4bit_UpCounter" 
+PRINT(".\Listings\05b-Lcd_4bit_UpCounter.m51") RAMSIZE(256) 

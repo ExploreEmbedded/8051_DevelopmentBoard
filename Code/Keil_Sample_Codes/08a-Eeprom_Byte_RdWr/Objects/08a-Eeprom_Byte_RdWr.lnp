@@ -1,0 +1,7 @@
+".\Objects\main.obj",
+".\Objects\delay.obj",
+".\Objects\eeprom.obj",
+".\Objects\uart.obj",
+".\Objects\i2c.obj" 
+TO ".\Objects\08a-Eeprom_Byte_RdWr" 
+PRINT(".\Listings\08a-Eeprom_Byte_RdWr.m51") RAMSIZE(256) 

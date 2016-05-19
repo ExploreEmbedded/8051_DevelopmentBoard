@@ -1,0 +1,6 @@
+".\Objects\main.obj",
+".\Objects\delay.obj",
+".\Objects\gpio.obj",
+".\Objects\lcd.obj" 
+TO ".\Objects\04a-Lcd_8bit_Display" 
+PRINT(".\Listings\04a-Lcd_8bit_Display.m51") RAMSIZE(256) 

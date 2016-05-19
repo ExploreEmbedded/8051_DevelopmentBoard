@@ -1,0 +1,4 @@
+".\Objects\main.obj",
+".\Objects\uart.obj" 
+TO ".\Objects\06c-UART_Tx_String" 
+PRINT(".\Listings\06c-UART_Tx_String.m51") RAMSIZE(256) 

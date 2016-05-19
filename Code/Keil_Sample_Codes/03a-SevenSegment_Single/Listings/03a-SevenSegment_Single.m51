@@ -1,0 +1,106 @@
+BL51 BANKED LINKER/LOCATER V6.22                                                        02/26/2016  19:20:06  PAGE 1
+
+
+BL51 BANKED LINKER/LOCATER V6.22, INVOKED BY:
+C:\KEIL_V5\C51\BIN\BL51.EXE .\Objects\main.obj TO .\Objects\03a-SevenSegment_Single PRINT (.\Listings\03a-SevenSegment_S
+>> ingle.m51) RAMSIZE (256)
+
+
+MEMORY MODEL: SMALL
+
+
+INPUT MODULES INCLUDED:
+  .\Objects\main.obj (MAIN)
+  C:\KEIL_V5\C51\LIB\C51S.LIB (?C_STARTUP)
+  C:\KEIL_V5\C51\LIB\C51S.LIB (?C?COPY)
+
+
+LINK MAP OF MODULE:  .\Objects\03a-SevenSegment_Single (MAIN)
+
+
+            TYPE    BASE      LENGTH    RELOCATION   SEGMENT NAME
+            -----------------------------------------------------
+
+            * * * * * * *   D A T A   M E M O R Y   * * * * * * *
+            REG     0000H     0008H     ABSOLUTE     "REG BANK 0"
+            DATA    0008H     0010H     UNIT         _DATA_GROUP_
+            IDATA   0018H     0001H     UNIT         ?STACK
+
+            * * * * * * *   C O D E   M E M O R Y   * * * * * * *
+            CODE    0000H     0003H     ABSOLUTE     
+            CODE    0003H     00F6H     UNIT         ?C?LIB_CODE
+            CODE    00F9H     0029H     UNIT         ?PR?MAIN?MAIN
+            CODE    0122H     0020H     UNIT         ?PR?_DELAY_MS?MAIN
+            CODE    0142H     0010H     UNIT         ?CO?MAIN
+            CODE    0152H     000CH     UNIT         ?C_C51STARTUP
+
+
+
+OVERLAY MAP OF MODULE:   .\Objects\03a-SevenSegment_Single (MAIN)
+
+
+SEGMENT                          DATA_GROUP 
+  +--> CALLED SEGMENT          START    LENGTH
+----------------------------------------------
+?C_C51STARTUP                  -----    -----
+  +--> ?PR?MAIN?MAIN
+
+?PR?MAIN?MAIN                  0008H    0010H
+  +--> ?CO?MAIN
+  +--> ?PR?_DELAY_MS?MAIN
+
+
+
+SYMBOL TABLE OF MODULE:  .\Objects\03a-SevenSegment_Single (MAIN)
+
+  VALUE           TYPE          NAME
+  ----------------------------------
+
+  -------         MODULE        MAIN
+  C:0000H         SYMBOL        _ICE_DUMMY_
+  D:00A0H         PUBLIC        P2
+BL51 BANKED LINKER/LOCATER V6.22                                                      02/26/2016  19:20:06  PAGE 2
+
+
+  C:00F9H         PUBLIC        main
+  C:0122H         PUBLIC        _DELAY_ms
+  C:0142H         SYMBOL        _?ix1000
+  -------         PROC          _DELAY_MS
+  D:0006H         SYMBOL        ms_Count
+  -------         DO            
+  D:0004H         SYMBOL        i
+  D:0002H         SYMBOL        j
+  -------         ENDDO         
+  C:0122H         LINE#         40
+  C:0122H         LINE#         41
+  C:0122H         LINE#         43
+  C:012CH         LINE#         44
+  C:012CH         LINE#         45
+  C:013AH         LINE#         46
+  C:0141H         LINE#         47
+  -------         ENDPROC       _DELAY_MS
+  -------         PROC          MAIN
+  -------         DO            
+  D:0008H         SYMBOL        seg_code
+  D:0001H         SYMBOL        cnt
+  -------         ENDDO         
+  C:00F9H         LINE#         50
+  C:00F9H         LINE#         51
+  C:00F9H         LINE#         52
+  C:010CH         LINE#         53
+  C:010CH         LINE#         55
+  C:010CH         LINE#         56
+  C:010CH         LINE#         57
+  C:010EH         LINE#         58
+  C:010EH         LINE#         59
+  C:0115H         LINE#         60
+  C:011CH         LINE#         61
+  -------         ENDPROC       MAIN
+  -------         ENDMOD        MAIN
+
+  -------         MODULE        ?C?COPY
+  C:00D3H         PUBLIC        ?C?COPY
+  -------         ENDMOD        ?C?COPY
+
+Program Size: data=25.0 xdata=0 code=350
+LINK/LOCATE RUN COMPLETE.  0 WARNING(S),  0 ERROR(S)

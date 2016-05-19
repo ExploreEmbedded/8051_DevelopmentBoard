@@ -1,0 +1,55 @@
+<html>
+<body>
+<pre>
+<h1>µVision Build Log</h1>
+<h2>Tool Versions:</h2>
+IDE-Version: µVision V5.17.0.0
+Copyright (C) 2015 ARM Ltd and ARM Germany GmbH. All rights reserved.
+License Information: a a, a, LIC=MPY74-FIDJL-VMI9I-TSJ7N-WEZBI-ISH5C
+ 
+Tool Versions:
+Toolchain:       PK51 Prof. Developers Kit  Version: 9.02
+Toolchain Path:  C:\Keil_v5\C51\BIN
+C Compiler:      C51.exe V9.02
+Assembler:       A51.exe V8.02
+Linker/Locator:  BL51.exe V6.22
+Library Manager: LIB51.exe V4.24
+Hex Converter:   OH51.exe V2.6
+CPU DLL:         S8051.DLL V3.73
+Dialog DLL:      DP51.DLL V2.61 
+<h2>Project:</h2>
+F:\Tutorials_And_Codes\8051\Ultra_8051_Board\06e-UART_String_RxTx_Lcd\06e-UART_String_RxTx_Lcd.uvproj
+Project File Date:  02/26/2016
+
+<h2>Output:</h2>
+Rebuild target 'Target 1'
+compiling main.c...
+compiling delay.c...
+compiling gpio.c...
+compiling lcd.c...
+compiling uart.c...
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_UART_TXSTRING?UART
+*** ERROR L107: ADDRESS SPACE OVERFLOW
+    SPACE:   DATA    
+    SEGMENT: ?DT?LCD
+    LENGTH:  0014H
+*** ERROR L105: PUBLIC REFERS TO IGNORED SEGMENT
+    SYMBOL:  ARR_LCDLINENUMADDRESS_U8
+    SEGMENT: ?DT?LCD
+*** ERROR L105: PUBLIC REFERS TO IGNORED SEGMENT
+    SYMBOL:  LCDCONFIG
+    SEGMENT: ?DT?LCD
+*** ERROR L105: PUBLIC REFERS TO IGNORED SEGMENT
+    SYMBOL:  V_LCDTRACKLINENUM_U8
+    SEGMENT: ?DT?LCD
+*** ERROR L105: PUBLIC REFERS TO IGNORED SEGMENT
+    SYMBOL:  V_LCDTRACKCURSORPOS_U8
+    SEGMENT: ?DT?LCD
+Program Size: data=142.0 xdata=0 code=3237
+Target not created.
+Build Time Elapsed:  00:00:01
+</pre>
+</body>
+</html>

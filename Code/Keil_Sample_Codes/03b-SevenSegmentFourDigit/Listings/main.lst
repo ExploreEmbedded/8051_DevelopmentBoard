@@ -1,0 +1,115 @@
+C51 COMPILER V9.02   MAIN                                                                  02/26/2016 19:21:50 PAGE 1   
+
+
+C51 COMPILER V9.02, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\main
+                    -.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          /***************************************************************************************************
+   2                                             ExploreEmbedded
+   3          ****************************************************************************************************
+   4           * File:   main.c
+   5           * Version: 16.0
+   6           * Author: ExploreEmbedded
+   7           * Website: http://www.exploreembedded.com/wiki
+   8           * Description: This file contains the program to demonstrate a four digit decimal up counter. 
+   9          
+  10          The libraries have been tested on ExploreEmbedded development boards. We strongly believe that the
+  11          library works on any of development boards for respective controllers. However, ExploreEmbedded
+  12          disclaims any kind of hardware failure resulting out of usage of libraries, directly or indirectly.
+  13          Files may be subject to change without prior notice. The revision history contains the information
+  14          related to updates.
+  15          
+  16          
+  17          GNU GENERAL PUBLIC LICENSE:
+  18              Copyright (C) 2012  ExploreEmbedded
+  19          
+  20              This program is free software: you can redistribute it and/or modify
+  21              it under the terms of the GNU General Public License as published by
+  22              the Free Software Foundation, either version 3 of the License, or
+  23              (at your option) any later version.
+  24          
+  25              This program is distributed in the hope that it will be useful,
+  26              but WITHOUT ANY WARRANTY; without even the implied warranty of
+  27              MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  28              GNU General Public License for more details.
+  29          
+  30              You should have received a copy of the GNU General Public License
+  31              along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  32          
+  33          
+  34          Errors and omissions should be reported to codelibraries@exploreembedded.com
+  35           **************************************************************************************************/
+  36          #include "reg51.h"
+  37          
+  38          #define SegOne   0xfe
+  39          #define SegTwo   0xfd
+  40          #define SegThree 0xfb
+  41          #define SegFour  0xf7 
+  42          
+  43          void DELAY_ms(unsigned int ms_Count) 
+  44          {
+  45   1          unsigned int i, j;
+  46   1          for (i = 0; i < ms_Count; i++) 
+  47   1          {
+  48   2              for (j = 0; j < 100; j++);
+  49   2          }
+  50   1      }
+  51          
+  52          int main() {
+  53   1          char seg_code[] = {0x3f, 0x06, 0x5b, 0x4f, 0x66, 0x6d, 0x7d, 0x07, 0x7f, 0x6f, 0x77, 0x7c, 0x39, 0x5e,
+             - 0x79, 0x71};
+C51 COMPILER V9.02   MAIN                                                                  02/26/2016 19:21:50 PAGE 2   
+
+  54   1          int cnt, num, temp,i;
+  55   1      
+  56   1      
+  57   1          while (1) 
+  58   1          {
+  59   2              for (cnt = 0x00; cnt <= 9999; cnt++) // loop to display 0-F
+  60   2              {
+  61   3                  for (i = 0; i < 100; i++)
+  62   3                  {
+  63   4                      num = cnt;
+  64   4                      temp = num / 1000;
+  65   4                      num = num % 1000;
+  66   4                      P0 = SegOne; 
+  67   4                      P2 = seg_code[temp];               
+  68   4                      DELAY_ms(1);
+  69   4      
+  70   4                      temp = num / 100;
+  71   4                      num = num % 100;
+  72   4                      P0 = SegTwo; 
+  73   4                      P2 = seg_code[temp];
+  74   4                      DELAY_ms(1);
+  75   4      
+  76   4                      temp = num / 10;
+  77   4                      P0 = SegThree;
+  78   4                      P2 = seg_code[temp];
+  79   4                      DELAY_ms(1);
+  80   4      
+  81   4                      temp = num % 10;
+  82   4                      P0 = SegFour;
+  83   4                      P2 = seg_code[temp];
+  84   4                      DELAY_ms(1);                              
+  85   4                  }
+  86   3              }
+  87   2          }
+  88   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    232    ----
+   CONSTANT SIZE    =     16    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----      22
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

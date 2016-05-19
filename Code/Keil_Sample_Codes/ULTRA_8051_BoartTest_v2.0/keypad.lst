@@ -1,0 +1,329 @@
+C51 COMPILER V9.02   KEYPAD                                                                05/19/2016 14:51:24 PAGE 1   
+
+
+C51 COMPILER V9.02, COMPILATION OF MODULE KEYPAD
+OBJECT MODULE PLACED IN .\keypad.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE ..\00-libfiles\keypad.c OPTIMIZE(8,SPEED) BROWSE INCDIR(..\00-libfiles) 
+                    -DEBUG OBJECTEXTEND PRINT(.\keypad.lst) TABS(2) OBJECT(.\keypad.obj)
+
+line level    source
+
+   1          /***************************************************************************************************
+   2                                                        ExploreEmbedded Copyright Notice  
+   3           ****************************************************************************************************
+   4           * File:   keypad.c
+   5           * Version: 16.0
+   6           * Author: ExploreEmbedded
+   7           * Website: http://www.exploreembedded.com/wiki
+   8           * Description: Contains the library routines for 4x4 Hex-Keypad
+   9          
+  10          This code has been developed and tested on ExploreEmbedded boards.  
+  11          We strongly believe that the library works on any of development boards for respective controllers. 
+  12          Check this link http://www.exploreembedded.com/wiki for awesome tutorials on 8051,PIC,AVR,ARM,Robotics,RTO
+             -S,IOT.
+  13          ExploreEmbedded invests substantial time and effort developing open source HW and SW tools, to support con
+             -sider buying the ExploreEmbedded boards.
+  14           
+  15          The ExploreEmbedded libraries and examples are licensed under the terms of the new-bsd license(two-clause 
+             -bsd license).
+  16          See also: http://www.opensource.org/licenses/bsd-license.php
+  17          
+  18          EXPLOREEMBEDDED DISCLAIMS ANY KIND OF HARDWARE FAILURE RESULTING OUT OF USAGE OF LIBRARIES, DIRECTLY OR
+  19          INDIRECTLY. FILES MAY BE SUBJECT TO CHANGE WITHOUT PRIOR NOTICE. THE REVISION HISTORY CONTAINS THE INFORMA
+             -TION 
+  20          RELATED TO UPDATES.
+  21           
+  22          
+  23          Permission to use, copy, modify, and distribute this software and its documentation for any purpose
+  24          and without fee is hereby granted, provided that this copyright notices appear in all copies 
+  25          and that both those copyright notices and this permission notice appear in supporting documentation.
+  26           **************************************************************************************************/
+  27          
+  28          
+  29          
+  30          /***************************************************************************************************
+  31                                       Revision History
+  32           ****************************************************************************************************
+  33          15.0: Initial version 
+  34          16.0: KEYPAD_Init function is updated to specify the row/col connections as parameters.
+  35                Included the gpio functions to read/write the individual row/col.
+  36           ***************************************************************************************************/
+  37          
+  38          
+  39          /***************************************************************************************************
+  40                                       PORT configurations/Connections
+  41           ****************************************************************************************************
+  42                      ___________________
+  43                     |    |    |    |    |
+  44                     | 0  | 1  | 2  | 3  |--------- R0
+  45                     |____|____|____|____|
+  46                     |    |    |    |    |
+  47                 | 4  | 5  | 6  | 7  |--------- R1
+  48                     |____|____|____|____|
+  49                     |    |    |    |    |
+  50                 | 8  | 9  | A  | B  |--------- R2
+C51 COMPILER V9.02   KEYPAD                                                                05/19/2016 14:51:24 PAGE 2   
+
+  51                 |____|____|____|____|
+  52                 |    |    |    |    |
+  53                 | C  | D  | E  | F  |--------- R3
+  54                     |____|____|____|____|
+  55                       |    |    |    |
+  56                       |    |    |    |____________ C3
+  57                       |    |    |
+  58                       |    |    |_________________ C2
+  59                       |    |
+  60                       |    |______________________ C1
+  61                       |
+  62                       |___________________________ C0
+  63          
+  64           ****************************************************************************************************/
+  65          
+  66          
+  67          #include "keypad.h"
+  68          #include "delay.h"
+  69          #include "gpio.h"
+  70          
+  71          gpioPins_et A_RowsPins_U8[C_MaxRows_U8];
+  72          gpioPins_et A_ColsPins_U8[C_MaxCols_U8];         
+  73          
+  74          const uint8_t A_KeyLookUptable_U8[C_MaxRows_U8][C_MaxCols_U8]=
+  75          {
+  76                '0','1','2','3',
+  77                '4','5','6','7',
+  78                '8','9','A','B',
+  79                'C','D','E','F'
+  80          };
+  81          
+  82          
+  83          /***************************************************************************************************
+  84                                     local function prototypes
+  85           ***************************************************************************************************/
+  86          static void keypad_WaitForKeyRelease(void);
+  87          static void keypad_WaitForKeyPress(void);
+  88          /**************************************************************************************************/
+  89          
+  90          
+  91          
+  92          
+  93          
+  94          /***************************************************************************************************
+  95                             void KEYPAD_Init()
+  96           ***************************************************************************************************
+  97           * I/P Arguments:Pin numbers where the rows and columns are conneted.
+  98           * Return value : none
+  99          
+ 100           * description  : This function configures the rows and columns for keypad scan
+ 101                  1.ROW lines are configured as Output.
+ 102                  2.Column Lines are configured as Input.
+ 103           ***************************************************************************************************/
+ 104          void KEYPAD_Init(
+ 105                  gpioPins_et row_0, 
+ 106                  gpioPins_et row_1, 
+ 107                  gpioPins_et row_2,
+ 108                  gpioPins_et row_3, 
+ 109                  gpioPins_et col_0,
+ 110                  gpioPins_et col_1, 
+ 111                  gpioPins_et col_2,
+ 112                  gpioPins_et col_3 )
+C51 COMPILER V9.02   KEYPAD                                                                05/19/2016 14:51:24 PAGE 3   
+
+ 113          {
+ 114   1          uint8_t i;
+ 115   1      
+ 116   1          A_RowsPins_U8[0] = row_0;
+ 117   1          A_RowsPins_U8[1] = row_1;
+ 118   1          A_RowsPins_U8[2] = row_2;
+ 119   1          A_RowsPins_U8[3] = row_3;
+ 120   1      
+ 121   1          A_ColsPins_U8[0] = col_0;
+ 122   1          A_ColsPins_U8[1] = col_1;
+ 123   1          A_ColsPins_U8[2] = col_2;
+ 124   1          A_ColsPins_U8[3] = col_3;
+ 125   1      
+ 126   1          for(i=0;i<C_MaxRows_U8;i++)
+ 127   1          {
+ 128   2              GPIO_PinDirection(A_RowsPins_U8[i],OUTPUT);
+ 129   2          }
+ 130   1      
+ 131   1          for(i=0;i<C_MaxCols_U8;i++)
+ 132   1          {
+ 133   2              GPIO_PinDirection(A_ColsPins_U8[i],INPUT);
+ 134   2          }
+ 135   1      }
+ 136          
+ 137          
+ 138          
+ 139          
+ 140          /***************************************************************************************************
+ 141                             static void keypad_WaitForKeyRelease(void)
+ 142           ***************************************************************************************************
+ 143           * I/P Arguments:none
+ 144          
+ 145           * Return value : none
+ 146          
+ 147           * description  : This function waits till the previous key is released.
+ 148           ***************************************************************************************************/
+ 149          static void keypad_WaitForKeyRelease(void)
+ 150          {
+ 151   1      
+ 152   1          uint8_t i,v_keyStatus_u8;
+ 153   1      
+ 154   1          for (i=0;i<C_MaxRows_U8;i++)
+ 155   1          {
+ 156   2              GPIO_PinWrite(A_RowsPins_U8[i],LOW); 
+ 157   2          }
+ 158   1      
+ 159   1          do
+ 160   1          {
+ 161   2              do
+ 162   2              {
+ 163   3                  v_keyStatus_u8 = 1;
+ 164   3                  for(i=0; i<C_MaxCols_U8; i++)
+ 165   3                  {
+ 166   4                      v_keyStatus_u8 &= GPIO_PinRead(A_ColsPins_U8[i]);
+ 167   4                  } 
+ 168   3              }while(v_keyStatus_u8 == 0);
+ 169   2      
+ 170   2              DELAY_us(C_DebounceTimeInMicroSecond_U16);
+ 171   2      
+ 172   2              v_keyStatus_u8 = 1;
+ 173   2              for(i=0; i<C_MaxCols_U8; i++)
+ 174   2              {
+C51 COMPILER V9.02   KEYPAD                                                                05/19/2016 14:51:24 PAGE 4   
+
+ 175   3                  v_keyStatus_u8 &= GPIO_PinRead(A_ColsPins_U8[i]);
+ 176   3              } 
+ 177   2          }while(v_keyStatus_u8 == 0);
+ 178   1      }
+ 179           
+ 180          
+ 181          
+ 182          
+ 183          
+ 184          
+ 185          /***************************************************************************************************
+ 186                             static void keypad_WaitForKeyPress(void)
+ 187           ***************************************************************************************************
+ 188           * I/P Arguments:none
+ 189          
+ 190           * Return value : none
+ 191          
+ 192           * description  : This function waits till a new key is pressed.
+ 193                            The new Key pressed can be decoded by the function KEYPAD_GetKey.
+ 194           ***************************************************************************************************/
+ 195          static void keypad_WaitForKeyPress(void)
+ 196          {
+ 197   1          uint8_t i,v_keyStatus_u8;
+ 198   1      
+ 199   1          for (i=0;i<C_MaxRows_U8;i++)
+ 200   1          {
+ 201   2              GPIO_PinWrite(A_RowsPins_U8[i],LOW); 
+ 202   2          }
+ 203   1      
+ 204   1          do
+ 205   1          {
+ 206   2              do
+ 207   2              {
+ 208   3                  v_keyStatus_u8 = 1;
+ 209   3                  for(i=0; i<C_MaxCols_U8; i++)
+ 210   3                  {
+ 211   4                      v_keyStatus_u8 &= GPIO_PinRead(A_ColsPins_U8[i]);
+ 212   4                  } 
+ 213   3              }while(v_keyStatus_u8 != 0);
+ 214   2      
+ 215   2      
+ 216   2              DELAY_us(C_DebounceTimeInMicroSecond_U16);
+ 217   2      
+ 218   2              v_keyStatus_u8 = 1;
+ 219   2              for(i=0; i<C_MaxCols_U8; i++)
+ 220   2              {
+ 221   3                  v_keyStatus_u8 &= GPIO_PinRead(A_ColsPins_U8[i]);
+ 222   3              } 
+ 223   2          }while(v_keyStatus_u8 != 0);
+ 224   1      }
+ 225          
+ 226          
+ 227          
+ 228          
+ 229          
+ 230          
+ 231          
+ 232          
+ 233          
+ 234          
+ 235          /***************************************************************************************************
+ 236                             unsigned char KEYPAD_GetKey()
+C51 COMPILER V9.02   KEYPAD                                                                05/19/2016 14:51:24 PAGE 5   
+
+ 237           ***************************************************************************************************
+ 238           * I/P Arguments:none
+ 239          
+ 240           * Return value : uint8_t--> ASCII value of the Key Pressed
+ 241          
+ 242           * description: This function waits till a key is pressed and returns its ASCII Value
+ 243                          It follows the following sequences to decode the key pressed:
+ 244                  1.Wait till the previous key is released..
+ 245                  2.Wait for the new key press.
+ 246                  3.Scan all the rows one at a time for the pressed key.
+ 247                  4.Decodes the key pressed depending on ROW-COL combination and returns its
+ 248                    ASCII value.
+ 249           ***************************************************************************************************/
+ 250          uint8_t KEYPAD_GetKey(void)
+ 251          {
+ 252   1          uint8_t i,j,v_KeyPressed_u8 = 0;
+ 253   1      
+ 254   1      
+ 255   1          keypad_WaitForKeyRelease();
+ 256   1          keypad_WaitForKeyPress();
+ 257   1      
+ 258   1          for (i=0;i<C_MaxRows_U8;i++)
+ 259   1          {
+ 260   2              GPIO_PinWrite(A_RowsPins_U8[i],HIGH); 
+ 261   2          }
+ 262   1      
+ 263   1          for (i=0;(i<C_MaxRows_U8);i++)
+ 264   1          {
+ 265   2              GPIO_PinWrite(A_RowsPins_U8[i],LOW);
+ 266   2      
+ 267   2              for(j=0; (j<C_MaxCols_U8); j++)
+ 268   2              {
+ 269   3                  if(GPIO_PinRead(A_ColsPins_U8[j]) == 0)
+ 270   3                  {
+ 271   4                      v_KeyPressed_u8 = 1;
+ 272   4                      break;
+ 273   4                  }
+ 274   3              } 
+ 275   2      
+ 276   2              if(v_KeyPressed_u8 ==1)
+ 277   2              {
+ 278   3                  break;
+ 279   3              }
+ 280   2      
+ 281   2              GPIO_PinWrite(A_RowsPins_U8[i],HIGH);
+ 282   2          }
+ 283   1      
+ 284   1          if(i<C_MaxRows_U8)
+ 285   1              v_KeyPressed_u8 = A_KeyLookUptable_U8[i][j];
+ 286   1          else
+ 287   1              v_KeyPressed_u8 = C_DefaultKey_U8;
+ 288   1      
+ 289   1      
+ 290   1          return v_KeyPressed_u8;
+ 291   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    395    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+C51 COMPILER V9.02   KEYPAD                                                                05/19/2016 14:51:24 PAGE 6   
+
+   DATA SIZE        =     24      16
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,449 @@
+C51 COMPILER V9.02   TIMERS                                                                05/19/2016 11:28:56 PAGE 1   
+
+
+C51 COMPILER V9.02, COMPILATION OF MODULE TIMERS
+OBJECT MODULE PLACED IN .\Objects\timers.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE ..\00-libfiles\timers.c OPTIMIZE(8,SPEED) BROWSE INCDIR(..\00-libfiles) 
+                    -DEBUG OBJECTEXTEND PRINT(.\Listings\timers.lst) TABS(2) OBJECT(.\Objects\timers.obj)
+
+line level    source
+
+   1          /***************************************************************************************************
+   2                                             ExploreEmbedded
+   3           ****************************************************************************************************
+   4           * File:   timer.c
+   5           * Version: 16.0
+   6           * Author: ExploreEmbedded
+   7           * Website: http://www.exploreembedded.com/wiki
+   8           * Description: File contains the functions for configuring and using the 8051 timers.
+   9          
+  10          
+  11          The libraries have been tested on ExploreEmbedded development boards. We strongly believe that the
+  12          library works on any of development boards for respective controllers. However, ExploreEmbedded
+  13          disclaims any kind of hardware failure resulting out of usage of libraries, directly or indirectly.
+  14          Files may be subject to change without prior notice. The revision history contains the information
+  15          related to updates.
+  16          
+  17          
+  18          GNU GENERAL PUBLIC LICENSE:
+  19              This program is free software: you can redistribute it and/or modify
+  20              it under the terms of the GNU General Public License as published by
+  21              the Free Software Foundation, either version 3 of the License, or
+  22              (at your option) any later version.
+  23          
+  24              This program is distributed in the hope that it will be useful,
+  25              but WITHOUT ANY WARRANTY; without even the implied warranty of
+  26              MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  27              GNU General Public License for more details.
+  28          
+  29              You should have received a copy of the GNU General Public License
+  30              along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  31          
+  32          Errors and omissions should be reported to codelibraries@exploreembedded.com
+  33           **************************************************************************************************/
+  34          
+  35          #include <reg51.h>
+  36          #include "timers.h"
+  37          #include "stdutils.h"
+  38          
+  39          
+  40          
+  41          
+  42          #if (TIMER_0_INTR_ENABLE == 1)
+              uint16_t v_Timer0_ReloadValue_U16=0;
+              uint16_t v_Timer0_OvfCount_U16=0;
+              isrFunPtr_t Timer0_UserCallBack= NULL;
+              #endif
+  47          
+  48          
+  49          #if (TIMER_1_INTR_ENABLE == 1)
+              uint16_t v_Timer1_ReloadValue_U16=0;
+              uint16_t v_Timer1_OvfCount_U16=0;
+              isrFunPtr_t Timer1_UserCallBack= NULL;
+              #endif
+  54          
+C51 COMPILER V9.02   TIMERS                                                                05/19/2016 11:28:56 PAGE 2   
+
+  55          
+  56          #if (TIMER_2_INTR_ENABLE == 1)
+              uint16_t v_Timer2_ReloadValue_U16=0;
+              uint16_t v_Timer2_OvfCount_U16=0;
+              isrFunPtr_t Timer2_UserCallBack= NULL;
+              #endif
+  61          
+  62          
+  63          
+  64          
+  65          
+  66          
+  67          
+  68          
+  69          
+  70          
+  71          
+  72          /***************************************************************************************************
+  73                      void TIMER_Init(uint8_t timerNumber_u8, uint32_t timerIntervalInUs_u32)
+  74           ****************************************************************************************************
+  75           * I/P Arguments:
+  76                          uint8_t: Timer number(0-2) that needs to be initialized.
+  77                          uint32_t: Timer tick value, Delay time in us.
+  78          
+  79          
+  80           * Return value: none
+  81          
+  82           * description :This function initializes the timer with specfied delay.
+  83                          The requested timer should be within rage(0,2).
+  84                          The delay time is multiple of uSec.
+  85          
+  86           ##Note: This function will only initialize the timers with required delay.
+  87                   TIMER_Start() fuctions needs to be called to start the timer.
+  88           ****************************************************************************************************/
+  89          
+  90          void TIMER_Init(uint8_t timerNumber_u8, uint32_t timerIntervalInUs_u32)
+  91          {
+  92   1          TIMER_SetTime(timerNumber_u8,timerIntervalInUs_u32);
+  93   1      }
+  94          
+  95          
+  96          
+  97          
+  98          /***************************************************************************************************
+  99                                     void TIMER_Start(uint8_t timerNumber_u8)
+ 100           ****************************************************************************************************
+ 101           * I/P Arguments:
+ 102                          uint8_t: Timer number(0-2) that needs to be started.
+ 103          
+ 104           * Return value: none
+ 105          
+ 106           * description :This function turns on the timer and it starts incrementing.
+ 107          
+ 108           ##Note: Before calling the TIMER_Start function the timers should to be initialized by calling TIMER_Init
+             -()
+ 109           ****************************************************************************************************/
+ 110          void TIMER_Start(uint8_t timerNumber_u8)
+ 111          {
+ 112   1          switch(timerNumber_u8)
+ 113   1          {
+ 114   2      #if (TIMER_0_INTR_ENABLE == 1)
+                  case 0 :
+C51 COMPILER V9.02   TIMERS                                                                05/19/2016 11:28:56 PAGE 3   
+
+                      v_Timer0_OvfCount_U16 = 0;
+                      TMOD |= 0x01;                               // Timer0 MODE1(16-bit timer)
+                      TL0 = (v_Timer0_ReloadValue_U16 & 0xFF);    // Load the lower 8-bits of timer value to TL0
+                      TH0 = (v_Timer0_ReloadValue_U16>>8) & 0xFF; // Load the higher 8-bits of timer value to TH0
+                      TR0 = 1;  // Start Timer
+                      ET0 = 1;  // Enable the Interrupt
+                      break;
+              #endif
+ 124   2      
+ 125   2      
+ 126   2      #if (TIMER_1_INTR_ENABLE == 1)
+                  case 1 :
+                      v_Timer0_OvfCount_U16 = 0;
+                      TMOD|=0x10;                                 // Timer1 MODE1(16-bit timer)
+                      TL1 = (v_Timer1_ReloadValue_U16 & 0xFF);    // Load the lower 8-bits of timer value
+                      TH1 = (v_Timer1_ReloadValue_U16>>8) & 0xFF; // Load the higher 8-bits of timer value
+                      TR1 = 1;  // Start Timer
+                      ET1 = 1;  // Enable the Interrupt
+                      break;
+              #endif
+ 136   2      
+ 137   2      
+ 138   2      #if (TIMER_2_INTR_ENABLE == 1)
+                  case 2 :
+                      v_Timer2_OvfCount_U16 = 0;
+                      RCAP2L = (v_Timer2_ReloadValue_U16 & 0xFF);    // Load the lower 8-bits of timer value
+                      RCAP2H = (v_Timer2_ReloadValue_U16>>8) & 0xFF; // Load the higher 8-bits of timer value
+                      TR2 = 1;  // Start Timer
+                      ET2 = 1;  // Enable the Interrupt
+                      break;
+              #endif
+ 147   2          }
+ 148   1      }
+ 149          
+ 150          
+ 151          
+ 152          
+ 153          
+ 154          
+ 155          /***************************************************************************************************
+ 156                      void TIMER_Stop(uint8_t timerNumber_u8)
+ 157           ****************************************************************************************************
+ 158           * I/P Arguments:
+ 159                          uint8_t: Timer number(0-2) that needs to be stopped.
+ 160          
+ 161           * Return value: none
+ 162          
+ 163           * description :This function turns OFF the timer incrementing.
+ 164           ****************************************************************************************************/
+ 165          void TIMER_Stop(uint8_t timerNumber_u8)
+ 166          {
+ 167   1          switch(timerNumber_u8)
+ 168   1          {
+ 169   2      #if (TIMER_0_INTR_ENABLE == 1)
+                  case 0 :
+                      TR0 = 0;   //Stop the timer
+                      break;
+              #endif
+ 174   2      
+ 175   2      
+ 176   2      #if (TIMER_1_INTR_ENABLE == 1)
+                  case 1 :
+C51 COMPILER V9.02   TIMERS                                                                05/19/2016 11:28:56 PAGE 4   
+
+                      TR1 = 0;   //Stop the timer
+                      break;
+              #endif
+ 181   2      
+ 182   2      
+ 183   2      #if (TIMER_2_INTR_ENABLE == 1)
+                  case 2 :
+                      TR2 = 0;   //Stop the timer
+                      break;
+              #endif
+ 188   2          }
+ 189   1      }
+ 190          
+ 191          
+ 192          
+ 193          
+ 194          
+ 195          /***************************************************************************************************
+ 196                      void TIMER_AttachInterrupt(uint8_t timerNumber_u8,timerFunPtr funPtr)
+ 197           ****************************************************************************************************
+ 198           * I/P Arguments:
+ 199                          uint8_t: Timer number(0-2) for which the user callback function needs to be hooked.
+ 200                          timerFunPtr: Function name thats needs to be called by the ISR.
+ 201                                       The function parameter and return type should be void as shown below.
+ 202                                       void MyFunToBeCalledByISR(void);
+ 203          
+ 204           * Return value: none
+ 205          
+ 206           * description :This functions attaches/hookes the user callback function to ISR.
+ 207                          Ever time the interrupt occurs the ISR will call the user CallBack function.
+ 208           ****************************************************************************************************/
+ 209          void TIMER_AttachInterrupt(uint8_t timerNumber_u8,isrFunPtr_t funPtr)
+ 210          {
+ 211   1      
+ 212   1          switch(timerNumber_u8)
+ 213   1          {
+ 214   2      #if (TIMER_0_INTR_ENABLE == 1)
+                  case 0 :
+                      Timer0_UserCallBack= funPtr;
+                      break;
+              #endif
+ 219   2      
+ 220   2      
+ 221   2      #if (TIMER_1_INTR_ENABLE == 1)
+                  case 1 :
+                      Timer1_UserCallBack= funPtr;
+                      break;
+              #endif
+ 226   2      
+ 227   2      
+ 228   2      #if (TIMER_2_INTR_ENABLE == 1)
+                  case 2 :
+                      Timer2_UserCallBack= funPtr;
+                      break;
+              #endif
+ 233   2          }
+ 234   1      }
+*** WARNING C280 IN LINE 209 OF ..\00-LIBFILES\TIMERS.C: 'funPtr': unreferenced local variable
+ 235          
+ 236          
+ 237          
+ 238          
+C51 COMPILER V9.02   TIMERS                                                                05/19/2016 11:28:56 PAGE 5   
+
+ 239          
+ 240          
+ 241          /***************************************************************************************************
+ 242                      uint32_t TIMER_GetTime(uint8_t timerNumber_u8)
+ 243           ****************************************************************************************************
+ 244           * I/P Arguments:
+ 245                          uint8_t: Timer number(0-2) whose timer value needs to be read.
+ 246          
+ 247           * Return value: uint32_t: Timer/delay value in us.
+ 248          
+ 249           * description :This functions returns the current timer value(TC) of the requested timer.
+ 250           ****************************************************************************************************/
+ 251          uint32_t TIMER_GetTime(uint8_t timerNumber_u8)
+ 252          {
+ 253   1          uint32_t timerDelay = 0;
+ 254   1          uint16_t timerCount = 0;
+ 255   1          switch(timerNumber_u8)
+ 256   1          {
+ 257   2      #if (TIMER_0_INTR_ENABLE == 1)
+                  case 0 :
+                      timerDelay = v_Timer0_ReloadValue_U16 * v_Timer0_OvfCount_U16;
+                      timerCount = ((uint16_t)TH0<<8) + TL0;
+                      if(timerCount>v_Timer0_ReloadValue_U16)
+                      {
+                          timerDelay = timerDelay + timerCount;
+                      }
+                      break;
+              #endif
+ 267   2      
+ 268   2      
+ 269   2      #if (TIMER_1_INTR_ENABLE == 1)
+                  case 1 :
+                      timerDelay = v_Timer1_ReloadValue_U16 * v_Timer1_OvfCount_U16;
+                      timerCount = ((uint16_t)TH1<<8) + TL1;
+                      if(timerCount>v_Timer1_ReloadValue_U16)
+                      {
+                          timerDelay = timerDelay + timerCount;
+                      }
+                      break;
+              #endif
+ 279   2      
+ 280   2      
+ 281   2      #if (TIMER_2_INTR_ENABLE == 1)
+                  case 2 :
+                      timerDelay = v_Timer2_ReloadValue_U16 * v_Timer2_OvfCount_U16;
+                      timerCount = ((uint16_t)RCAP2H<<8) + RCAP2L;
+                      if(timerCount>v_Timer2_ReloadValue_U16)
+                      {
+                          timerDelay = timerDelay + timerCount;
+                      }
+                      break;
+              #endif
+ 291   2          }
+ 292   1      
+ 293   1          timerDelay = timerDelay * TIMER_TICK;   // Mulitply the total count with TimerTick = 1.085;
+ 294   1      
+ 295   1          return timerDelay;
+ 296   1      }
+ 297          
+ 298          
+ 299          
+ 300          
+C51 COMPILER V9.02   TIMERS                                                                05/19/2016 11:28:56 PAGE 6   
+
+ 301          
+ 302          
+ 303          
+ 304          /***************************************************************************************************
+ 305                      void TIMER_SetTime(uint8_t timerNumber_u8, uint32_t timerIntervalInUs_u32)
+ 306           ****************************************************************************************************
+ 307           * I/P Arguments:
+ 308                          uint8_t: Timer number(0-2) whose timer value needs to be set.
+ 309                          uint32_t: Timer/delay value in us.
+ 310          
+ 311           * Return value: None
+ 312          
+ 313           * description :This functions sets the required/delay  timer value for the requested timer.
+ 314           
+ 315           ###Note: The request for the timer delays will be rejected if the reuested delay is greater than TIMER_MA
+             -X_DELAY  
+ 316           ****************************************************************************************************/
+ 317          void TIMER_SetTime(uint8_t timerNumber_u8, uint32_t timerIntervalInUs_u32)
+ 318          {
+ 319   1          uint16_t reloadValue;
+ 320   1          if(timerIntervalInUs_u32 <= TIMER_MAX_DELAY)
+ 321   1          {
+ 322   2              reloadValue = (uint32_t)65536 - (timerIntervalInUs_u32/(TIMER_TICK));
+ 323   2              switch (timerNumber_u8)
+ 324   2              {
+ 325   3      #if (TIMER_0_INTR_ENABLE == 1)
+                      case 0 :            
+                          v_Timer0_ReloadValue_U16 = reloadValue;
+                          break;
+              #endif
+ 330   3      
+ 331   3      
+ 332   3      #if (TIMER_1_INTR_ENABLE == 1)
+                      case 1 :
+                          v_Timer1_ReloadValue_U16 = reloadValue;
+                          break;
+              #endif
+ 337   3      
+ 338   3      
+ 339   3      #if (TIMER_2_INTR_ENABLE == 1)
+                      case 2 :
+                          v_Timer2_ReloadValue_U16 = reloadValue;
+                          break;
+              #endif
+ 344   3              }
+ 345   2          }
+ 346   1      }
+ 347          
+ 348          
+ 349          
+ 350          /***************************************************************************************************
+ 351                                      TIMER_ISR's
+ 352           ****************************************************************************************************
+ 353           desc: The four ISR's will be called independently whenever the configured delay time is elapsed.
+ 354                 In other words the ISR's will be called when the Timer Count(TC) reaches the Match Value(MR0).
+ 355          
+ 356                 The ISR will clear the Interrupt bit as it is being served.(Setting the bit will clear the Correspo
+             -nding ISR Bit)
+ 357                 If the user CallBack Function is configured then it will be called.
+ 358           ****************************************************************************************************/
+ 359          #if (TIMER_0_INTR_ENABLE == 1)
+              void timer0_isr() interrupt 1
+C51 COMPILER V9.02   TIMERS                                                                05/19/2016 11:28:56 PAGE 7   
+
+              {
+                  TL0 = (v_Timer0_ReloadValue_U16 & 0xFF);    // Load the lower 8-bits of timer value
+                  TH0 = (v_Timer0_ReloadValue_U16>>8) & 0xFF; // Load the higher 8-bits of timer value
+                  v_Timer0_OvfCount_U16++;
+              
+                  if(Timer0_UserCallBack!= NULL)
+                  {
+                      Timer0_UserCallBack();
+                  }
+              }
+              #endif
+ 372          
+ 373          
+ 374          
+ 375          #if (TIMER_1_INTR_ENABLE == 1)
+              void timer1_isr() interrupt 3
+              {
+                  TL1 = (v_Timer1_ReloadValue_U16 & 0xFF);    // Load the lower 8-bits of timer value
+                  TH1 = (v_Timer1_ReloadValue_U16>>8) & 0xFF; // Load the higher 8-bits of timer value
+                  v_Timer1_OvfCount_U16++;
+              
+                  if(Timer1_UserCallBack!= NULL)
+                  {
+                      Timer1_UserCallBack();
+                  }
+              }
+              #endif
+ 388          
+ 389          
+ 390          
+ 391          #if (TIMER_2_INTR_ENABLE == 1)
+              void timer2_isr() interrupt 5
+              {
+                  RCAP2L = (v_Timer2_ReloadValue_U16 & 0xFF);    // Load the lower 8-bits of timer value
+                  RCAP2H = (v_Timer2_ReloadValue_U16>>8) & 0xFF; // Load the higher 8-bits of timer value
+                  TF2 = 0;
+                  v_Timer2_OvfCount_U16++;
+                  if(Timer2_UserCallBack!= NULL)
+                  {
+                      Timer2_UserCallBack();
+                  }
+              }
+              #endif
+ 404          
+ 405          /*************************************************************************************************
+ 406                                              END of  ISR's
+ 407           *************************************************************************************************/
+ 408          
+ 409          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    131    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----      17
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  1 WARNING(S),  0 ERROR(S)

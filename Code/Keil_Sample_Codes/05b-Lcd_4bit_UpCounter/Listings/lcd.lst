@@ -1,0 +1,1061 @@
+C51 COMPILER V9.02   LCD                                                                   02/26/2016 19:46:39 PAGE 1   
+
+
+C51 COMPILER V9.02, COMPILATION OF MODULE LCD
+OBJECT MODULE PLACED IN .\Objects\lcd.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE ..\00-libfiles\lcd.c OPTIMIZE(8,SPEED) BROWSE INCDIR(..\00-libfiles) DEB
+                    -UG OBJECTEXTEND PRINT(.\Listings\lcd.lst) TABS(2) OBJECT(.\Objects\lcd.obj)
+
+line level    source
+
+   1          /***************************************************************************************************
+   2                                             ExploreEmbedded    
+   3          *****************************************************************************************************
+   4           * File:   lcd.c
+   5           * Version: 16.0
+   6           * Author: ExploreEmbedded
+   7           * Website: http://www.exploreembedded.com/wiki
+   8           * Description: File contains the Library routines for Alpha Numeric LCD
+   9          
+  10          The libraries have been tested on ExploreEmbedded development boards. We strongly believe that the 
+  11          library works on any of development boards for respective controllers. However, ExploreEmbedded 
+  12          disclaims any kind of hardware failure resulting out of usage of libraries, directly or indirectly.
+  13          Files may be subject to change without prior notice. The revision history contains the information 
+  14          related to updates. 
+  15          
+  16          
+  17          GNU GENERAL PUBLIC LICENSE: 
+  18              Copyright (C) 2012  ExploreEmbedded
+  19          
+  20              This program is free software: you can redistribute it and/or modify
+  21              it under the terms of the GNU General Public License as published by
+  22              the Free Software Foundation, either version 3 of the License, or
+  23              (at your option) any later version.
+  24          
+  25              This program is distributed in the hope that it will be useful,
+  26              but WITHOUT ANY WARRANTY; without even the implied warranty of
+  27              MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  28              GNU General Public License for more details.
+  29          
+  30              You should have received a copy of the GNU General Public License
+  31              along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  32          
+  33          
+  34          Errors and omissions should be reported to codelibraries@exploreembedded.com
+  35          ***************************************************************************************************/
+  36          
+  37          
+  38          
+  39          
+  40          /***************************************************************************************************
+  41                                       Revision History
+  42          ****************************************************************************************************
+  43          15.0: Initial version 
+  44          15.1: Updated the LCD_DisplayNumber function to display Bin/Dec/Hex numbers.
+  45                Removed the functions LCD_DisplayHexNumber and LCD_DisplayBinaryNumber.
+  46                Changed the structure prefix from STK to STR.
+  47          ***************************************************************************************************/
+  48          
+  49          
+  50          /***************************************************************************************************
+  51                                             2x16 LCD internal structure
+  52          ****************************************************************************************************
+  53              
+  54                      |<--------------------16 chars on Each Line-------------------->|
+C51 COMPILER V9.02   LCD                                                                   02/26/2016 19:46:39 PAGE 2   
+
+  55                     ____________________________________________________________________    
+  56                    |\                                                                  /|
+  57                    | \ ___ ___ ___ ___ ___ ___ ___ ___ ___ ___ ___ ___ ___ ___ ___ ___/ |
+  58                    |  |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   | |
+  59              Line0 |  | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | A | B | C | D | E | F | |
+  60                    |  |___|___|___|___|___|___|___|___|___|___|___|___|___|___|___|___| |
+  61                    |  |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   | |
+  62              Line1 |  | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | A | B | C | D | E | F | |
+  63                    |  |___|___|___|___|___|___|___|___|___|___|___|___|___|___|___|___| |
+  64                    | /                                                                \ |
+  65                    |/__________________________________________________________________\|
+  66                                  | D7 D6 D5 D4 D3 D2 D1 D0 |     EN   RW   RS          
+  67                                  |<------Lcd Data Bus----->|    Lcd control Lines
+  68                                  |                          |          
+  69          ***************************************************************************************************/      
+             -                             
+  70          #include <stdarg.h>
+  71          #include "delay.h"
+  72          #include "lcd.h"
+  73          #include "gpio.h"
+  74          
+  75          
+  76          
+  77          /***************************************************************************************************
+  78                                    Global Variables and Structures
+  79          ****************************************************************************************************/
+  80          uint8_t v_LcdTrackLineNum_U8;         //Variable to track the line numbers
+  81          uint8_t v_LcdTrackCursorPos_U8;       //Variable to track the cursor
+  82          LcdConfig_st LCDConfig;             //Structure containing the selected LCD Configuration
+  83          uint8_t ARR_LcdLineNumAddress_U8[]={0x80,0xc0,0x90,0xd0};
+  84          /**************************************************************************************************/
+  85          
+  86          
+  87          
+  88          
+  89          /***************************************************************************************************
+  90                                      local function prototypes
+  91          ***************************************************************************************************/
+  92          static void lcd_DataWrite( uint8_t dat);
+  93          static void lcd_BusyCheck(void);
+  94          static void lcd_Reset(void);
+  95          static void lcd_SendCmdSignals(void);
+  96          static void lcd_SendDataSignals(void);
+  97          static void lcd_SendHigherNibble(uint8_t dataByte);
+  98          static void lcd_SendLowerNibble(uint8_t dataByte);
+  99          /**************************************************************************************************/
+ 100          
+ 101          
+ 102          
+ 103          
+ 104          
+ 105          /**************************************************************************************************
+ 106          void LCD_SetUp( pin numbers of lcd)
+ 107          ***************************************************************************************************
+ 108           * Function name:  LCD_SetUp()
+ 109           * I/P Arguments: gpioPins_et RS: Pin where RS is connected 
+ 110                            gpioPins_et RW: Pin where RW is connected (P_NC if not connected) 
+ 111                            gpioPins_et EN: Pin where EN is connected
+ 112                            
+ 113                            gpioPins_et D0: Pin where D0 is connected (P_NC if not connected for 4-bit mode)  
+ 114                            gpioPins_et D1: Pin where D1 is connected (P_NC if not connected for 4-bit mode)  
+ 115                            gpioPins_et D2: Pin where D2 is connected (P_NC if not connected for 4-bit mode)  
+C51 COMPILER V9.02   LCD                                                                   02/26/2016 19:46:39 PAGE 3   
+
+ 116                            gpioPins_et D3: Pin where D3 is connected (P_NC if not connected for 4-bit mode) 
+ 117                            gpioPins_et D4: Pin where D4 is connected 
+ 118                            gpioPins_et D5: Pin where D5 is connected 
+ 119                            gpioPins_et D6: Pin where D6 is connected 
+ 120                            gpioPins_et D7: Pin where D7 is connected 
+ 121           * Return value    : none
+ 122          
+ 123           * description  :This function is used to configure the controller pins for LCD operation.
+ 124                           Pass the pin numbers where the RS,RW,EN, D0-D7 are connected as parameters.
+ 125                           In case of four bit mode pass P_NC as parameter for D0-D3.
+ 126                           If RW is not used then pass P_NC as parameter for RS.
+ 127          **************************************************************************************************/
+ 128          void LCD_SetUp(gpioPins_et RS, 
+ 129                         gpioPins_et RW, 
+ 130                         gpioPins_et EN,
+ 131                         gpioPins_et D0, 
+ 132                         gpioPins_et D1, 
+ 133                         gpioPins_et D2, 
+ 134                         gpioPins_et D3,
+ 135                         gpioPins_et D4,
+ 136                         gpioPins_et D5,
+ 137                         gpioPins_et D6,
+ 138                         gpioPins_et D7 )
+ 139          {
+ 140   1        /* Copy the PIN numbers where the LCD is connected */
+ 141   1          LCDConfig.RS = RS;
+ 142   1          LCDConfig.RW = RW;
+ 143   1          LCDConfig.EN = EN;
+ 144   1      
+ 145   1          LCDConfig.D0 = D0;
+ 146   1          LCDConfig.D1 = D1;
+ 147   1          LCDConfig.D2 = D2;
+ 148   1          LCDConfig.D3 = D3;
+ 149   1          LCDConfig.D4 = D4;
+ 150   1          LCDConfig.D5 = D5;
+ 151   1          LCDConfig.D6 = D6;
+ 152   1          LCDConfig.D7 = D7;
+ 153   1      
+ 154   1      
+ 155   1          if((D0 == P_NC) || (D1 == P_NC) || (D2 == P_NC) || (D3 == P_NC))
+ 156   1          {
+ 157   2              LCDConfig.v_LcdMode_U8 = 4; // Select 4-bit mode as D0-D3 are not used(P_NC)
+ 158   2          }
+ 159   1          else
+ 160   1          {
+ 161   2              LCDConfig.v_LcdMode_U8 = 8; // 8-bit mode configure D0-D3 as output.      
+ 162   2              GPIO_PinDirection(D0,OUTPUT);
+ 163   2              GPIO_PinDirection(D1,OUTPUT);
+ 164   2              GPIO_PinDirection(D2,OUTPUT);
+ 165   2              GPIO_PinDirection(D3,OUTPUT);
+ 166   2          }
+ 167   1      
+ 168   1          /* Configure RS,RW,EN, D4-D7 as Output for both 4/8-bit mode.*/
+ 169   1          GPIO_PinDirection(RS,OUTPUT);
+ 170   1          GPIO_PinDirection(RW,OUTPUT);
+ 171   1          GPIO_PinDirection(EN,OUTPUT);
+ 172   1      
+ 173   1          GPIO_PinDirection(D4,OUTPUT);
+ 174   1          GPIO_PinDirection(D5,OUTPUT);
+ 175   1          GPIO_PinDirection(D6,OUTPUT);
+ 176   1          GPIO_PinDirection(D7,OUTPUT);  
+ 177   1      }
+C51 COMPILER V9.02   LCD                                                                   02/26/2016 19:46:39 PAGE 4   
+
+ 178          
+ 179          
+ 180          /**************************************************************************************************
+ 181          void LCD_Init(uint8_t v_lcdNoOfLines_u8, uint8_t v_MaxCharsPerLine_u8)
+ 182          ***************************************************************************************************
+ 183           * Function name:  LCD_Init()
+ 184           * I/P Arguments:  uint8_t: Number of lines of LCD
+ 185                             uint8_t: Number of Chars per line
+ 186           * Return value    : none
+ 187          
+ 188           * description  :This function is used to initialize the lcd.
+ 189                           *It initializes the LCD for selected mode(4/8-bit) and Type(16x2/16x1 etc)
+ 190          **************************************************************************************************/
+ 191          void LCD_Init(uint8_t v_lcdNoOfLines_u8, uint8_t v_MaxCharsPerLine_u8)
+ 192          {
+ 193   1      
+ 194   1      
+ 195   1          LCDConfig.v_MaxSupportedChars_U8 = v_MaxCharsPerLine_u8; //Maintaian the LCD type
+ 196   1          LCDConfig.v_MaxSupportedLines_U8 = v_lcdNoOfLines_u8;
+ 197   1          if(v_lcdNoOfLines_u8 > C_LcdLineTwo)
+ 198   1          {
+ 199   2              ARR_LcdLineNumAddress_U8[C_LcdLineTwo] =  0x90 + (v_MaxCharsPerLine_u8 & 0x0fu);
+ 200   2              ARR_LcdLineNumAddress_U8[C_LcdLineThree] =  0xd0 + (v_MaxCharsPerLine_u8 & 0x0fu);
+ 201   2          }
+ 202   1      
+ 203   1          DELAY_ms(100);
+ 204   1      
+ 205   1          if(LCDConfig.v_LcdMode_U8 == C_EightBitMode_U8)
+ 206   1          {
+ 207   2              LCD_CmdWrite(CMD_LCD_EIGHT_BIT_MODE); // Initialize the LCD for 8-bit 5x7 matrix type
+ 208   2          }
+ 209   1          else if(LCDConfig.v_LcdMode_U8 == C_FourBitMode_U8)
+ 210   1          {
+ 211   2              lcd_Reset();
+ 212   2              LCD_CmdWrite(CMD_LCD_FOUR_BIT_MODE); // Initialize the LCD for 4-bit 5x7 matrix type 
+ 213   2          }
+ 214   1      
+ 215   1          LCD_CmdWrite(CMD_DISPLAY_ON_CURSOR_ON);     // Display ON cursor ON
+ 216   1          LCD_Clear();                             // Clear the LCD and go to First line First Position
+ 217   1      }
+ 218          
+ 219          
+ 220          
+ 221          
+ 222          /***************************************************************************************************
+ 223                                   void LCD_Clear()
+ 224          ****************************************************************************************************
+ 225           * I/P Arguments: none.
+ 226           * Return value    : none
+ 227          
+ 228           * description  :This function clears the LCD and moves the cursor to beginning of first line
+ 229          ****************************************************************************************************/
+ 230          void LCD_Clear()
+ 231          {
+ 232   1          LCD_CmdWrite(CMD_LCD_CLEAR);    // Clear the LCD and go to First line First Position
+ 233   1          LCD_GoToLine(C_LcdLineZero);
+ 234   1      }
+ 235          
+ 236          
+ 237          
+ 238          
+ 239          
+C51 COMPILER V9.02   LCD                                                                   02/26/2016 19:46:39 PAGE 5   
+
+ 240          /***************************************************************************************************
+ 241                                   void LCD_GoToLine(uint8_t v_lineNumber_u8)
+ 242          ****************************************************************************************************
+ 243           * I/P Arguments: uint8_t: Line number.
+ 244           * Return value    : none
+ 245          
+ 246           * description  :This function moves the Cursor to beginning of the specified line.
+ 247                  If the requested line number is out of range, it will not move the cursor.
+ 248          
+ 249               Note: The line numbers run from 0 to Maxlines-1,
+ 250                      To avoid the confusion the below constants has to be used for selecting lines
+ 251                     For four line LCD the constants are as below:
+ 252                     C_LcdLineZero,
+ 253                     C_LcdLineOne,
+ 254                     C_LcdLineTwo,
+ 255                     C_LcdLineThree,
+ 256          
+ 257          ****************************************************************************************************/
+ 258          void LCD_GoToLine(uint8_t v_lineNumber_u8)
+ 259          {
+ 260   1          if(v_lineNumber_u8 < LCDConfig.v_MaxSupportedLines_U8)
+ 261   1          {
+ 262   2              /* If the line number is within range then
+ 263   2                 Move the Cursor to beginning of the specified line */
+ 264   2              v_LcdTrackCursorPos_U8 = 0x00;
+ 265   2              v_LcdTrackLineNum_U8 = v_lineNumber_u8;
+ 266   2              LCD_CmdWrite(ARR_LcdLineNumAddress_U8[v_lineNumber_u8]);
+ 267   2          }
+ 268   1      }
+ 269          
+ 270          
+ 271          
+ 272          
+ 273          
+ 274          
+ 275          /***************************************************************************************************
+ 276                                   void  LCD_GoToNextLine()
+ 277          ****************************************************************************************************
+ 278           * I/P Arguments: none
+ 279           * Return value    : none
+ 280          
+ 281           * description  :This function moves the Cursor to beginning of the next line.
+ 282                  If the cursor is on last line and NextLine command is issued then 
+ 283                  it will move the cursor to first line.
+ 284          ****************************************************************************************************/
+ 285          void  LCD_GoToNextLine(void)
+ 286          {
+ 287   1          /*Increment the current line number.
+ 288   1            In case it exceeds the limit, rool it back to first line */
+ 289   1          v_LcdTrackLineNum_U8++;
+ 290   1          v_LcdTrackCursorPos_U8 = 0x00;
+ 291   1          if(v_LcdTrackLineNum_U8 >= LCDConfig.v_MaxSupportedLines_U8)
+ 292   1              v_LcdTrackLineNum_U8 = C_LcdLineZero;
+ 293   1          LCD_CmdWrite(ARR_LcdLineNumAddress_U8[v_LcdTrackLineNum_U8]);
+ 294   1      }
+ 295          
+ 296          
+ 297          
+ 298          
+ 299          
+ 300          
+ 301          /***************************************************************************************************
+C51 COMPILER V9.02   LCD                                                                   02/26/2016 19:46:39 PAGE 6   
+
+ 302                          void LCD_SetCursor(char v_lineNumber_u8,char v_charNumber_u8)
+ 303          ****************************************************************************************************
+ 304           * I/P Arguments: char row,char col
+ 305                           row -> line number(line1=1, line2=2),
+ 306                                  For 2line LCD the I/P argument should be either 1 or 2.
+ 307                           col -> char number.
+ 308                                  For 16-char LCD the I/P argument should be between 0-15.
+ 309           * Return value    : none
+ 310          
+ 311           * description  :This function moves the Cursor to specified position
+ 312          
+ 313                             Note:If the Input(Line/Char number) are out of range 
+ 314                                  then no action will be taken
+ 315          ****************************************************************************************************/
+ 316          #if ( Enable_LCD_SetCursor    == 1 )
+              void LCD_SetCursor(uint8_t v_lineNumber_u8, uint8_t v_charNumber_u8)
+              {
+              
+                  if((v_lineNumber_u8 < LCDConfig.v_MaxSupportedLines_U8) &&
+                          (v_charNumber_u8< LCDConfig.v_MaxSupportedChars_U8))
+                  {
+                      /*If the line number and char are in range then
+                         move the Cursor to specified Position*/
+                      v_LcdTrackCursorPos_U8 = v_charNumber_u8;
+                      v_LcdTrackLineNum_U8 = v_lineNumber_u8;
+                      LCD_CmdWrite(ARR_LcdLineNumAddress_U8[v_lineNumber_u8]+v_charNumber_u8);
+                  }
+              }
+              #endif
+ 331          
+ 332          
+ 333          
+ 334          
+ 335          
+ 336          
+ 337          
+ 338          
+ 339          
+ 340          /***************************************************************************************************
+ 341                                 void LCD_CmdWrite( uint8_t v_lcdCmd_u8)
+ 342          ****************************************************************************************************
+ 343           * I/P Arguments: 8-bit command supported by LCD.
+ 344           * Return value    : none
+ 345          
+ 346           * description :This function sends a command to LCD.
+ 347                          Some of the commonly used commands are defined in lcd.h.
+ 348                          For more commands refer the data sheet and send the supported command.                
+ 349                          The behaviour is undefined if unsupported commands are sent.    
+ 350          ****************************************************************************************************/
+ 351          void LCD_CmdWrite( uint8_t v_lcdCmd_u8)
+ 352          {
+ 353   1          lcd_BusyCheck();
+ 354   1          if(LCDConfig.v_LcdMode_U8 == C_EightBitMode_U8)
+ 355   1           {
+ 356   2               lcd_SendLowerNibble(v_lcdCmd_u8);
+ 357   2           }
+ 358   1           else
+ 359   1           {
+ 360   2               lcd_SendHigherNibble(v_lcdCmd_u8);
+ 361   2               lcd_SendCmdSignals();
+ 362   2               v_lcdCmd_u8 = v_lcdCmd_u8 << 4;
+ 363   2           }
+C51 COMPILER V9.02   LCD                                                                   02/26/2016 19:46:39 PAGE 7   
+
+ 364   1      
+ 365   1           lcd_SendHigherNibble(v_lcdCmd_u8);
+ 366   1           lcd_SendCmdSignals();
+ 367   1      }
+ 368          
+ 369          
+ 370          
+ 371          
+ 372          
+ 373          
+ 374          
+ 375          /***************************************************************************************************
+ 376                                 void LCD_DisplayChar( char v_lcdData_u8)
+ 377          ****************************************************************************************************
+ 378           * I/P Arguments: ASCII value of the char to be displayed.
+ 379           * Return value    : none
+ 380          
+ 381           * description  : This function sends a character to be displayed on LCD.
+ 382                            Any valid ascii value can be passed to display respective character
+ 383          
+ 384          ****************************************************************************************************/
+ 385          void LCD_DisplayChar(char v_lcdData_u8)
+ 386          {
+ 387   1          if((v_LcdTrackCursorPos_U8>=LCDConfig.v_MaxSupportedChars_U8) || (v_lcdData_u8=='\n'))
+ 388   1          {
+ 389   2              /* If the cursor has reached to end of line on page1
+ 390   2              OR NewLine command is issued Then Move the cursor to next line */
+ 391   2              LCD_GoToNextLine();
+ 392   2          }
+ 393   1          if(v_lcdData_u8!='\n') /* Display the character if its not newLine Char */
+ 394   1          {
+ 395   2      
+ 396   2              lcd_DataWrite(v_lcdData_u8); /* Display the data and keep track of cursor */
+ 397   2              v_LcdTrackCursorPos_U8++;
+ 398   2          }
+ 399   1      }
+ 400          
+ 401          
+ 402          
+ 403          
+ 404          
+ 405          
+ 406          
+ 407          /***************************************************************************************************
+ 408                                 void LCD_DisplayString(char *ptr_stringPointer_u8)
+ 409          ****************************************************************************************************
+ 410           * I/P Arguments: String(Address of the string) to be displayed.
+ 411           * Return value    : none
+ 412          
+ 413           * description  :
+ 414                         This function is used to display the ASCII string on the lcd.
+ 415                           1.The ptr_stringPointer_u8 points to the first char of the string
+ 416                              and traverses till the end(NULL CHAR)and displays a char each time.
+ 417          
+ 418          ****************************************************************************************************/
+ 419          #if (Enable_LCD_DisplayString==1)
+ 420          void LCD_DisplayString(char *ptr_stringPointer_u8)
+ 421          {
+ 422   1          while((*ptr_stringPointer_u8)!=0)
+ 423   1              LCD_DisplayChar(*ptr_stringPointer_u8++); // Loop through the string and display char by char
+ 424   1      }
+ 425          #endif
+C51 COMPILER V9.02   LCD                                                                   02/26/2016 19:46:39 PAGE 8   
+
+ 426          
+ 427          
+ 428          
+ 429          
+ 430          
+ 431          
+ 432          
+ 433          /***************************************************************************************************
+ 434                         void LCD_ScrollMessage(uint8_t v_lineNumber_u8, char *ptr_msgPointer_u8)
+ 435          ****************************************************************************************************
+ 436           * I/P Arguments: 
+ 437                            uint8_t  : Line number on which the message has to be scrolled
+ 438                            char *: pointer to the string to be scrolled                      
+ 439          
+ 440           * Return value    : none
+ 441          
+ 442           * description  :This function scrolls the given message on the specified line.
+ 443                           If the specified line number is out of range then the message
+ 444                           will be scrolled on first line
+ 445          ****************************************************************************************************/
+ 446          #if ( Enable_LCD_ScrollMessage  == 1 )
+ 447          void LCD_ScrollMessage(uint8_t v_lineNumber_u8, char *ptr_msgPointer_u8)
+ 448          {
+ 449   1          unsigned char i,j;
+ 450   1      
+ 451   1      
+ 452   1          if(v_lineNumber_u8 >= LCDConfig.v_MaxSupportedLines_U8)
+ 453   1              v_lineNumber_u8 = C_LcdLineZero; // Select first line if the v_lineNumber_u8 is out of range
+ 454   1      
+ 455   1          LCD_CmdWrite(CMD_DISPLAY_ON_CURSOR_OFF);             //Disable the Cursor
+ 456   1      
+ 457   1          for(i=0;ptr_msgPointer_u8[i];i++)
+ 458   1          {      
+ 459   2              /* Loop to display the complete string,    each time 16 chars are displayed and
+ 460   2              pointer is incremented to point to next char */
+ 461   2      
+ 462   2      
+ 463   2              LCD_GoToLine(v_lineNumber_u8);     //Move the Cursor to first line
+ 464   2      
+ 465   2              for(j=0;(j<LCDConfig.v_MaxSupportedChars_U8) && (ptr_msgPointer_u8[i+j]);j++)
+ 466   2              {
+ 467   3                  //Display first 16 Chars or till Null char is reached
+ 468   3                  LCD_DisplayChar(ptr_msgPointer_u8[i+j]);
+ 469   3              }
+ 470   2      
+ 471   2      
+ 472   2              while( j<LCDConfig.v_MaxSupportedChars_U8)
+ 473   2              {
+ 474   3                  /*If the chars to be scrolled are less than MaxLcdChars,
+ 475   3                    then display remaining chars with blank spaces*/
+ 476   3                  LCD_DisplayChar(' ');
+ 477   3                  j++;
+ 478   3              }
+ 479   2      
+ 480   2              DELAY_ms(C_ScrollDelayTime_U8);
+ 481   2          }
+ 482   1          LCD_CmdWrite(CMD_DISPLAY_ON_CURSOR_ON);              // Finally enable the Cursor
+ 483   1      }
+ 484          #endif
+ 485          
+ 486          
+ 487          
+C51 COMPILER V9.02   LCD                                                                   02/26/2016 19:46:39 PAGE 9   
+
+ 488          
+ 489          
+ 490          
+ 491          /***************************************************************************************************
+ 492          void LCD_DisplayNumber(uint8_t v_numericSystem_u8, uint32_t v_number_u32, uint8_t v_numOfDigitsToDisplay_u
+             -8)
+ 493          ****************************************************************************************************
+ 494           * Function name:  LCD_DisplayNumber()
+ 495           * I/P Arguments: 
+ 496                            uint8_t :  specifies type of number C_BINARY_U8(2),C_DECIMAL_U8(10), C_HEX_U8(16)
+ 497                            uint32_t: Number to be displayed on the LCD.
+ 498                            uint8_t : Number of digits to be displayed
+ 499                            
+ 500           * Return value    : none
+ 501          
+ 502           * description  :This function is used to display a max of 10digit decimal/Hex number OR specified 
+ 503                           number of bits for binary number.
+ 504                          
+ 505                          1st parameter specifies type of number C_BINARY_U8(2),C_DECIMAL_U8(10), C_HEX_U8(16)      
+             -           
+ 506                          3rd parameter specifies the number of digits from the right side to be displayed
+ 507                           The output for the input combinations is as below
+ 508                         
+ 509              Binary:     1.(2,10,4) then 4-LSB will be displayed ie. 1010
+ 510                          2.(C_BINARY_U8,10,8) then 8-LSB will be displayed ie. 00001010
+ 511                          3.(C_BINARY_U8,10,2) then 2-LSB will be displayed ie. 10
+ 512                          
+ 513              Decimal:    4.(10,12345,4) then 4-digits ie. 2345 will be displayed
+ 514                          5.(C_DECIMAL_U8,12345,6) then 6-digits ie. 012345 will be displayed
+ 515                          6.(10,12345,C_DisplayDefaultDigits_U8) then 12345 will be displayed.\
+ 516                          
+ 517              Hex:        7.(16,0x12AB,3) then 3-digits ie. 2AB will be displayed
+ 518                          8.(C_HEX_U8,0x12AB,6) then 6-digits ie. 0012AB will be displayed
+ 519                          9.(C_HEX_U8,0x12AB,C_DisplayDefaultDigits_U8) then 12AB will be displayed.                
+ 520          ****************************************************************************************************/
+ 521          #if ((Enable_LCD_DisplayNumber == 1) || (Enable_LCD_DisplayFloatNumber == 1) || (Enable_LCD_Printf==1))
+ 522          void LCD_DisplayNumber(uint8_t v_numericSystem_u8, uint32_t v_number_u32, uint8_t v_numOfDigitsToDisplay_u
+             -8)
+ 523          {
+ 524   1          uint8_t i=0,a[10];
+ 525   1          
+ 526   1          if(C_BINARY_U8 == v_numericSystem_u8)
+ 527   1          {
+ 528   2              while(v_numOfDigitsToDisplay_u8!=0)
+ 529   2              {
+ 530   3                /* Start Extracting the bits from the specified bit positions.
+ 531   3                Get the Acsii values of the bits and display */
+ 532   3                i = util_GetBitStatus(v_number_u32,(v_numOfDigitsToDisplay_u8-1));
+ 533   3                LCD_DisplayChar(util_Dec2Ascii(i));
+ 534   3                v_numOfDigitsToDisplay_u8--;
+ 535   3              }        
+ 536   2          }    
+ 537   1          else if(v_number_u32==0)
+ 538   1          {
+ 539   2              /* If the number is zero then update the array with the same for displaying */
+ 540   2              for(i=0;((i<v_numOfDigitsToDisplay_u8) && (i<C_MaxDigitsToDisplay_U8));i++)
+ 541   2                  LCD_DisplayChar('0');
+ 542   2          }
+ 543   1          else
+ 544   1          {
+ 545   2              for(i=0;i<v_numOfDigitsToDisplay_u8;i++)
+ 546   2              {
+C51 COMPILER V9.02   LCD                                                                   02/26/2016 19:46:39 PAGE 10  
+
+ 547   3                  /* Continue extracting the digits from right side
+ 548   3                     till the Specified v_numOfDigitsToDisplay_u8 */
+ 549   3                  if(v_number_u32!=0)
+ 550   3                  {
+ 551   4                      /* Extract the digits from the number till it becomes zero.
+ 552   4                      First get the remainder and divide the number by TypeOfNum(10-Dec, 16-Hex) each time.
+ 553   4                      
+ 554   4                      example for Decimal number: 
+ 555   4                      If v_number_u32 = 123 then extracted remainder will be 3 and number will be 12.
+ 556   4                      The process continues till it becomes zero or max digits reached*/
+ 557   4                      a[i]=util_GetMod32(v_number_u32,v_numericSystem_u8);
+ 558   4                      v_number_u32=v_number_u32/v_numericSystem_u8;
+ 559   4                  }
+ 560   3                  else if( (v_numOfDigitsToDisplay_u8 == C_DisplayDefaultDigits_U8) ||
+ 561   3                           (v_numOfDigitsToDisplay_u8 > C_MaxDigitsToDisplay_U8))
+ 562   3                  {
+ 563   4                      /* Stop the iteration if the Max number of digits are reached or 
+ 564   4                       the user expects exact(Default) digits in the number to be displayed */ 
+ 565   4                      break;
+ 566   4                  }
+ 567   3                  else
+ 568   3                  {
+ 569   4                      /* In case user expects more digits to be displayed than the actual digits in number,
+ 570   4                        then update the remaining digits with zero.
+ 571   4                     Ex: v_num_u32 is 123 and user wants five digits then 00123 has to be displayed */
+ 572   4                      a[i]=0;
+ 573   4                  }
+ 574   3              }
+ 575   2              
+ 576   2               while(i!=0)
+ 577   2              { 
+ 578   3                /* Finally get the ascii values of the digits and display*/
+ 579   3                LCD_DisplayChar(util_Hex2Ascii(a[i-1]));
+ 580   3                i--;
+ 581   3              }
+ 582   2          }
+ 583   1      }
+ 584          #endif
+ 585          
+ 586          
+ 587          
+ 588          
+ 589          
+ 590          
+ 591          
+ 592          
+ 593          /*************************************************************************************************
+ 594                      void  LCD_DisplayFloatNumber(double v_floatNum_f32)
+ 595          **************************************************************************************************
+ 596           * Function name:  LCD_DisplayFloatNumber()
+ 597           * I/P Arguments: float: float Number to be displayed on the LCD.
+ 598          
+ 599           * Return value    : none
+ 600          
+ 601           * description  :This function is used to display a floating point number
+ 602                           It supports 6digits of precision.
+ 603          
+ 604              Note: Float will be disabled by default as it takes huge controller resources
+ 605                   It can be enabled by changing value of Enable_LCD_DisplayFloatNumber to 1 in lcd.h
+ 606          ***************************************************************************************************/
+ 607          #if (Enable_LCD_DisplayFloatNumber == 1)  
+              void LCD_DisplayFloatNumber(double v_floatNum_f32)
+C51 COMPILER V9.02   LCD                                                                   02/26/2016 19:46:39 PAGE 11  
+
+              {
+                  uint32_t v_temp_u32;
+                  /* Dirty hack to support the floating point by extracting the integer and fractional part.
+                    1.Type cast the number to int to get the integer part.
+                    2.Display the extracted integer part followed by a decimal point(.)
+                    3.Later the integer part is made zero by subtracting with the extracted integer value.
+                    4.Finally the fractional part is multiplied by 100000 to support 6-digit precision */
+              
+                  v_temp_u32 = (uint32_t) v_floatNum_f32;
+                  LCD_DisplayNumber(C_DECIMAL_U8,v_temp_u32,C_DisplayDefaultDigits_U8);
+              
+                  LCD_DisplayChar('.');
+              
+                  v_floatNum_f32 = v_floatNum_f32 - v_temp_u32;
+                  v_temp_u32 = v_floatNum_f32 * 1000000;
+                  LCD_DisplayNumber(C_DECIMAL_U8,v_temp_u32,C_DisplayDefaultDigits_U8);
+              }
+              #endif
+ 627          
+ 628          
+ 629          
+ 630          
+ 631          
+ 632          
+ 633          /*************************************************************************************************
+ 634                      void LCD_Printf(const char *argList, ...)
+ 635          **************************************************************************************************
+ 636           * Function name:  LCD_Printf()
+ 637           * I/P Arguments: variable length arguments similar to printf
+ 638          
+ 639           * Return value    : none
+ 640          
+ 641           * description  :This function is similar to printf function in C.
+ 642                           It takes the arguments with specified format and prints accordingly
+ 643                           The supported format specifiers are as below.
+ 644                           1. %c: character
+ 645                           2. %d: signed 16-bit number
+ 646                           3. %D: signed 32-bit number
+ 647                           4. %u: unsigned 16-bit number
+ 648                           5. %U: unsigned 32-bit number
+ 649                           6. %b: 16-bit binary number
+ 650                           7. %B: 32-bit binary number
+ 651                           8. %f: Float number
+ 652                           9. %x: 16-bit hexadecimal number
+ 653                           10. %X: 32-bit hexadecimal number
+ 654                           11. %s: String
+ 655          
+ 656          
+ 657          
+ 658            Extra feature is available to specify the number of digits to be displayed using printf.
+ 659               ex: %4d: will display the lower four digits of the decimal number.
+ 660                   %12b: will display the 12-LSB of the number
+ 661                   %d: Will display the exact digits of the number
+ 662          
+ 663          #####: In case of printing the 8-bit variables, it is recommended to type cast and promote them to uint16_
+             -t.
+ 664                  uint8_t v_Num_u8;
+ 665                  LCD_Printf("num1:%u",(uint16_t)v_Num_u8); 
+ 666          **************************************************************************************************/
+ 667          #if ( Enable_LCD_Printf   == 1 ) 
+ 668          void LCD_Printf(const char *argList, ...)
+ 669          {
+C51 COMPILER V9.02   LCD                                                                   02/26/2016 19:46:39 PAGE 12  
+
+ 670   1          const char *ptr;
+ 671   1          va_list argp;
+ 672   1          sint16_t v_num_s16;
+ 673   1          sint32_t v_num_s32;
+ 674   1          uint16_t v_num_u16;
+ 675   1          uint32_t v_num_u32;
+ 676   1          char *str;
+ 677   1          char  ch;
+ 678   1          uint8_t v_numOfDigitsToDisp_u8;
+ 679   1      #if (Enable_LCD_DisplayFloatNumber == 1)  
+                  double v_floatNum_f32;
+              #endif
+ 682   1      
+ 683   1          va_start(argp, argList);
+ 684   1      
+ 685   1          /* Loop through the list to extract all the input arguments */
+ 686   1          for(ptr = argList; *ptr != '\0'; ptr++)
+ 687   1          {
+ 688   2      
+ 689   2              ch= *ptr;
+ 690   2              if(ch == '%')         /*Check for '%' as there will be format specifier after it */
+ 691   2              {
+ 692   3                  ptr++;
+ 693   3                  ch = *ptr;
+ 694   3                 if((ch>=0x30) && (ch<=0x39))
+ 695   3                  {
+ 696   4                     v_numOfDigitsToDisp_u8 = 0;
+ 697   4                     while((ch>=0x30) && (ch<=0x39))
+ 698   4                      {
+ 699   5                         v_numOfDigitsToDisp_u8 = (v_numOfDigitsToDisp_u8 * 10) + (ch-0x30);
+ 700   5                         ptr++;
+ 701   5                         ch = *ptr;
+ 702   5                      }
+ 703   4                  }
+ 704   3                  else
+ 705   3                  {
+ 706   4                    v_numOfDigitsToDisp_u8 = C_MaxDigitsToDisplayUsingPrintf_U8;
+ 707   4                  }                
+ 708   3      
+ 709   3      
+ 710   3                  switch(ch)       /* Decode the type of the argument */
+ 711   3                  {
+ 712   4                  case 'C':
+ 713   4                  case 'c':     /* Argument type is of char, hence read char data from the argp */
+ 714   4                      ch = va_arg(argp, int);
+ 715   4                      LCD_DisplayChar(ch);
+ 716   4                      break;
+ 717   4      
+ 718   4                  case 'd':    /* Argument type is of signed integer, hence read 16bit data from the argp */
+ 719   4                      v_num_s16 = va_arg(argp, int);
+ 720   4                      if(v_num_s16<0)
+ 721   4                       { /* If the number is -ve then display the 2's complement along with '-' sign */ 
+ 722   5                         v_num_s16 = -v_num_s16;
+ 723   5                         LCD_DisplayChar('-');
+ 724   5                       }
+ 725   4                      LCD_DisplayNumber(C_DECIMAL_U8,v_num_s16,v_numOfDigitsToDisp_u8);
+ 726   4                      break;
+ 727   4                      
+ 728   4                  case 'D':    /* Argument type is of integer, hence read 16bit data from the argp */
+ 729   4                      v_num_s32 = va_arg(argp, sint32_t);
+ 730   4                      if(v_num_s32<0)
+ 731   4                       { /* If the number is -ve then display the 2's complement along with '-' sign */
+C51 COMPILER V9.02   LCD                                                                   02/26/2016 19:46:39 PAGE 13  
+
+ 732   5                         v_num_s32 = -v_num_s32;
+ 733   5                         LCD_DisplayChar('-');
+ 734   5                       }
+ 735   4                      LCD_DisplayNumber(C_DECIMAL_U8,v_num_s32,v_numOfDigitsToDisp_u8);              
+ 736   4                      break;    
+ 737   4      
+ 738   4                  case 'u':    /* Argument type is of unsigned integer, hence read 16bit unsigned data */
+ 739   4                      v_num_u16 = va_arg(argp, int);
+ 740   4                      LCD_DisplayNumber(C_DECIMAL_U8,v_num_u16,v_numOfDigitsToDisp_u8);
+ 741   4                      break;
+ 742   4                  
+ 743   4                  case 'U':    /* Argument type is of integer, hence read 32bit unsigend data */
+ 744   4                      v_num_u32 = va_arg(argp, uint32_t);
+ 745   4                      LCD_DisplayNumber(C_DECIMAL_U8,v_num_u32,v_numOfDigitsToDisp_u8);               
+ 746   4                      break;            
+ 747   4      
+ 748   4                  case 'x':  /* Argument type is of hex, hence hexadecimal data from the argp */
+ 749   4                      v_num_u16 = va_arg(argp, int);
+ 750   4                      LCD_DisplayNumber(C_HEX_U8,v_num_u16,v_numOfDigitsToDisp_u8);
+ 751   4                      break;
+ 752   4      
+ 753   4                  case 'X':  /* Argument type is of hex, hence hexadecimal data from the argp */
+ 754   4                      v_num_u32 = va_arg(argp, uint32_t);
+ 755   4                      LCD_DisplayNumber(C_HEX_U8,v_num_u32,v_numOfDigitsToDisp_u8);                
+ 756   4                      break;
+ 757   4      
+ 758   4                  
+ 759   4                  case 'b':  /* Argument type is of binary,Read int and convert to binary */
+ 760   4                      v_num_u16 = va_arg(argp, int);
+ 761   4                      if(v_numOfDigitsToDisp_u8 == C_MaxDigitsToDisplayUsingPrintf_U8)
+ 762   4                         v_numOfDigitsToDisp_u8 = 16;
+ 763   4                      LCD_DisplayNumber(C_BINARY_U8,v_num_u16,v_numOfDigitsToDisp_u8);                
+ 764   4                      break;
+ 765   4      
+ 766   4                  case 'B':  /* Argument type is of binary,Read int and convert to binary */
+ 767   4                      v_num_u32 = va_arg(argp, uint32_t);
+ 768   4                      if(v_numOfDigitsToDisp_u8 == C_MaxDigitsToDisplayUsingPrintf_U8)
+ 769   4                         v_numOfDigitsToDisp_u8 = 16;                
+ 770   4                      LCD_DisplayNumber(C_BINARY_U8,v_num_u32,v_numOfDigitsToDisp_u8);                
+ 771   4                      break;
+ 772   4      
+ 773   4      
+ 774   4                  case 'F':
+ 775   4                  case 'f': /* Argument type is of float, hence read double data from the argp */
+ 776   4      #if (Enable_LCD_DisplayFloatNumber == 1)  
+                              v_floatNum_f32 = va_arg(argp, double);              
+                              LCD_DisplayFloatNumber(v_floatNum_f32);
+              #endif
+ 780   4                      break;
+ 781   4      
+ 782   4      
+ 783   4                  case 'S':
+ 784   4                  case 's': /* Argument type is of string, hence get the pointer to sting passed */
+ 785   4                      str = va_arg(argp, char *);
+ 786   4                      LCD_DisplayString(str);                
+ 787   4                      break;
+ 788   4      
+ 789   4                  case '%':
+ 790   4                      LCD_DisplayChar('%');
+ 791   4                      break;
+ 792   4                  }
+ 793   3              }
+C51 COMPILER V9.02   LCD                                                                   02/26/2016 19:46:39 PAGE 14  
+
+ 794   2              else
+ 795   2              {
+ 796   3                  /* As '%' is not detected display/transmit the char passed */
+ 797   3                  LCD_DisplayChar(ch);
+ 798   3              }
+ 799   2          }
+ 800   1      
+ 801   1          va_end(argp);
+ 802   1      }
+ 803          #endif
+ 804          
+ 805          
+ 806          
+ 807          
+ 808          
+ 809          
+ 810          /*************************************************************************************************
+ 811                                 static void lcd_DataWrite( uint8_t dat)
+ 812          **************************************************************************************************
+ 813           * I/P Arguments: uint8_t: 8-bit value to be sent to LCD.
+ 814           * Return value    : none
+ 815          
+ 816           * description : This functions is used to send a byte of data to LCD.                 .    
+ 817          **************************************************************************************************/
+ 818          static void lcd_DataWrite( uint8_t dataByte)
+ 819          {
+ 820   1          lcd_BusyCheck();
+ 821   1          if(LCDConfig.v_LcdMode_U8 == C_EightBitMode_U8)
+ 822   1           {
+ 823   2               lcd_SendLowerNibble(dataByte);
+ 824   2           }
+ 825   1           else
+ 826   1           {
+ 827   2               lcd_SendHigherNibble(dataByte);
+ 828   2               lcd_SendDataSignals();
+ 829   2               dataByte = dataByte << 4;
+ 830   2           }
+ 831   1      
+ 832   1           lcd_SendHigherNibble(dataByte);
+ 833   1           lcd_SendDataSignals();
+ 834   1      }
+ 835          
+ 836          
+ 837          
+ 838          
+ 839          
+ 840          
+ 841          
+ 842          /*************************************************************************************************
+ 843                                 static void lcd_BusyCheck()
+ 844          **************************************************************************************************
+ 845           * I/P Arguments: none.
+ 846           * Return value    : none
+ 847          
+ 848           * description : This functions is used check whether LCD is busy.
+ 849                           It waits till the LCD is busy by polling the LCD busy flag.
+ 850                           After completing the previous operation, LCDs clears its internal busy flag.
+ 851          **************************************************************************************************/
+ 852          static void lcd_BusyCheck(void)
+ 853          {
+ 854   1          uint8_t busyflag;
+ 855   1        if(LCDConfig.RW != P_NC)                         //Perform Busy check if RW pin is used
+C51 COMPILER V9.02   LCD                                                                   02/26/2016 19:46:39 PAGE 15  
+
+ 856   1         {
+ 857   2          GPIO_PinDirection(LCDConfig.D7,INPUT); // Configure busy pin as input
+ 858   2          GPIO_PinWrite(LCDConfig.RS,0);           // Select the Command Register by pulling RS LOW
+ 859   2          GPIO_PinWrite(LCDConfig.RW,1);           // Select the Read Operation for busy flag by setting RW
+ 860   2          do
+ 861   2          {
+ 862   3      
+ 863   3              GPIO_PinWrite(LCDConfig.EN,0);
+ 864   3              DELAY_us(10);
+ 865   3              GPIO_PinWrite(LCDConfig.EN,1); 
+ 866   3              DELAY_us(10);
+ 867   3              busyflag = GPIO_PinRead(LCDConfig.D7);
+ 868   3      
+ 869   3      
+ 870   3              if(LCDConfig.v_LcdMode_U8 == 4)
+ 871   3              {
+ 872   4                  /* Perform extra dummy read for 4-bit */            
+ 873   4                  GPIO_PinWrite(LCDConfig.EN,0);
+ 874   4                  DELAY_us(10);
+ 875   4                  GPIO_PinWrite(LCDConfig.EN,1); 
+ 876   4                  DELAY_us(10);
+ 877   4              }    
+ 878   3          }while(busyflag);
+ 879   2      
+ 880   2              GPIO_PinDirection(LCDConfig.D7,OUTPUT); // Configure busy pin as Output
+ 881   2        }
+ 882   1      else
+ 883   1       {
+ 884   2          /* Busy flag cannot be read as RW is not available hence Extra delay of 1ms is added 
+ 885   2            to ensure the LCD completes previous operation and ready to receive new commands/data */
+ 886   2          DELAY_ms(1);  
+ 887   2       }
+ 888   1      }
+ 889          
+ 890          
+ 891          
+ 892          
+ 893          
+ 894          
+ 895          /*************************************************************************************************
+ 896                                 static void lcd_Reset()
+ 897          **************************************************************************************************
+ 898           * I/P Arguments: none.
+ 899           * Return value    : none
+ 900          
+ 901           * description : This functions is used to reset the LCD. 
+ 902                           This is used only in 4-bit mode as the LCD by default boots in 8-Bit mode.
+ 903          ----------------------------------------------------------------------------------*/
+ 904          static void lcd_Reset(void)
+ 905          {
+ 906   1          /* LCD reset sequence for 4-bit mode, refer data sheet for more info */
+ 907   1          lcd_SendHigherNibble(0x30);
+ 908   1          lcd_SendCmdSignals();
+ 909   1          DELAY_ms(100);
+ 910   1          lcd_SendHigherNibble(0x30);
+ 911   1          lcd_SendCmdSignals();
+ 912   1          DELAY_us(200);
+ 913   1          lcd_SendHigherNibble(0x30);
+ 914   1          lcd_SendCmdSignals();
+ 915   1          DELAY_us(200);
+ 916   1          lcd_SendHigherNibble(0x20);
+ 917   1          lcd_SendCmdSignals();
+C51 COMPILER V9.02   LCD                                                                   02/26/2016 19:46:39 PAGE 16  
+
+ 918   1          DELAY_us(200);
+ 919   1      }
+ 920          
+ 921          
+ 922          
+ 923          
+ 924          
+ 925          
+ 926          /*************************************************************************************************
+ 927                                 static void lcd_SendHigherNibble(uint8_t var)
+ 928          **************************************************************************************************
+ 929           * I/P Arguments: uint8_t: Higher nibble of the data to be send on LCD4-LCD7 data lines
+ 930           * Return value    : none
+ 931          
+ 932           * description : This functions is used to send the higher nibble of the data to LCD in 4-bit mode
+ 933          **************************************************************************************************/
+ 934          static void lcd_SendHigherNibble(uint8_t dataByte)
+ 935          {
+ 936   1          GPIO_PinWrite(LCDConfig.D4,util_IsBitSet(dataByte,4));
+ 937   1          GPIO_PinWrite(LCDConfig.D5,util_IsBitSet(dataByte,5));
+ 938   1          GPIO_PinWrite(LCDConfig.D6,util_IsBitSet(dataByte,6));
+ 939   1          GPIO_PinWrite(LCDConfig.D7,util_IsBitSet(dataByte,7));
+ 940   1      }
+ 941          
+ 942          
+ 943          
+ 944          
+ 945          /*************************************************************************************************
+ 946                                 static void lcd_SendHigherNibble(uint8_t var)
+ 947          **************************************************************************************************
+ 948           * I/P Arguments: uint8_t: Lower nibble of the data to be send on LCD4-LCD7 data lines
+ 949           * Return value    : none
+ 950          
+ 951           * description : This functions is used to send the lower nibble of the data to LCD
+ 952          **************************************************************************************************/
+ 953          static void lcd_SendLowerNibble(uint8_t dataByte)
+ 954          {
+ 955   1          GPIO_PinWrite(LCDConfig.D0,util_IsBitSet(dataByte,0));
+ 956   1          GPIO_PinWrite(LCDConfig.D1,util_IsBitSet(dataByte,1));
+ 957   1          GPIO_PinWrite(LCDConfig.D2,util_IsBitSet(dataByte,2));
+ 958   1          GPIO_PinWrite(LCDConfig.D3,util_IsBitSet(dataByte,3));
+ 959   1      }
+ 960          
+ 961          
+ 962          
+ 963          
+ 964          /*************************************************************************************************
+ 965                                 static void lcd_SendCmdSignals()
+ 966          **************************************************************************************************
+ 967           * I/P Arguments: none
+ 968           * Return value    : none
+ 969          
+ 970           * description : This functions generates the signals for sending the v_lcdCmd_u8 to LCD
+ 971          **************************************************************************************************/
+ 972          static void lcd_SendCmdSignals(void)
+ 973          {
+ 974   1           GPIO_PinWrite(LCDConfig.RS,0);
+ 975   1           GPIO_PinWrite(LCDConfig.RW,0);
+ 976   1           GPIO_PinWrite(LCDConfig.EN,1);
+ 977   1           DELAY_us(10);
+ 978   1           GPIO_PinWrite(LCDConfig.EN,0);
+ 979   1        
+C51 COMPILER V9.02   LCD                                                                   02/26/2016 19:46:39 PAGE 17  
+
+ 980   1      }
+ 981          
+ 982          
+ 983          
+ 984          
+ 985          /*************************************************************************************************
+ 986                                 static void lcd_SendDataSignals()
+ 987          ***************************************************************************************************
+ 988           * I/P Arguments: none
+ 989           * Return value    : none
+ 990          
+ 991           * description : This functions generates the signals for sending the Data to LCD
+ 992          **************************************************************************************************/
+ 993          static void lcd_SendDataSignals(void)
+ 994          {
+ 995   1           GPIO_PinWrite(LCDConfig.RS,1);
+ 996   1           GPIO_PinWrite(LCDConfig.RW,0);
+ 997   1           GPIO_PinWrite(LCDConfig.EN,1);
+ 998   1           DELAY_us(10);
+ 999   1           GPIO_PinWrite(LCDConfig.EN,0);
+1000   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1859    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     20      81
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

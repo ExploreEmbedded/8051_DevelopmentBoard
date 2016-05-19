@@ -1,0 +1,106 @@
+C51 COMPILER V9.02   MAIN                                                                  02/26/2016 20:44:43 PAGE 1   
+
+
+C51 COMPILER V9.02, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE INCDIR(..\00-libfiles) DEBUG OBJECTEXTEN
+                    -D PRINT(.\Listings\main.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          /***************************************************************************************************
+   2                                             ExploreEmbedded
+   3          ****************************************************************************************************
+   4           * File:   main.c
+   5           * Version: 16.0
+   6           * Author: ExploreEmbedded
+   7           * Website: http://www.exploreembedded.com/wiki
+   8           * Description: This file contains the program to read and write RTC(DS1307) date and time, 
+   9           *              Date and time is set only once in the beginning after that it is continously read and Disp
+             -layed on LCD
+  10          
+  11          The libraries have been tested on ExploreEmbedded development boards. We strongly believe that the
+  12          library works on any of development boards for respective controllers. However, ExploreEmbedded
+  13          disclaims any kind of hardware failure resulting out of usage of libraries, directly or indirectly.
+  14          Files may be subject to change without prior notice. The revision history contains the information
+  15          related to updates.
+  16          
+  17          
+  18          GNU GENERAL PUBLIC LICENSE:
+  19              Copyright (C) 2012  ExploreEmbedded
+  20          
+  21              This program is free software: you can redistribute it and/or modify
+  22              it under the terms of the GNU General Public License as published by
+  23              the Free Software Foundation, either version 3 of the License, or
+  24              (at your option) any later version.
+  25          
+  26              This program is distributed in the hope that it will be useful,
+  27              but WITHOUT ANY WARRANTY; without even the implied warranty of
+  28              MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  29              GNU General Public License for more details.
+  30          
+  31              You should have received a copy of the GNU General Public License
+  32              along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  33          
+  34          
+  35          Errors and omissions should be reported to codelibraries@exploreembedded.com
+  36          **************************************************************************************************/
+  37          
+  38          #include "rtc.h"
+  39          #include "lcd.h"
+  40          
+  41          
+  42          int main() 
+  43          {
+  44   1          rtc_t rtc;
+  45   1      
+  46   1          /*Connect RS->P0.0, RW->P0.1, EN->P0.2 and data bus to P0.4 to P0.7*/
+  47   1          LCD_SetUp(P0_0,P0_1,P0_2,P_NC,P_NC,P_NC,P_NC,P0_4,P0_5,P0_6,P0_7);
+  48   1          LCD_Init(2,16);
+  49   1      
+  50   1          RTC_Init();
+  51   1          rtc.hour = 0x10; //  10:40:20 am
+  52   1          rtc.min =  0x40;
+  53   1          rtc.sec =  0x00;
+C51 COMPILER V9.02   MAIN                                                                  02/26/2016 20:44:43 PAGE 2   
+
+  54   1      
+  55   1          rtc.date = 0x01; //1st Jan 2016
+  56   1          rtc.month = 0x01;
+  57   1          rtc.year = 0x16;
+  58   1          rtc.weekDay = 5; // Friday: 5th day of week considering monday as first day.
+  59   1      
+  60   1      
+  61   1      
+  62   1      
+  63   1          /*##### Set the time and Date only once. Once the Time and Date is set, comment these lines
+  64   1               and reflash the code. Else the time will be set every time the controller is reset*/
+  65   1          RTC_SetDateTime(&rtc);  //  10:40:20 am, 1st Jan 2016
+  66   1      
+  67   1      
+  68   1          /* Display the Time and Date continuously */
+  69   1          while(1)
+  70   1          {
+  71   2              RTC_GetDateTime(&rtc);
+  72   2              LCD_GoToLine(0);
+  73   2              LCD_Printf("time:%2x:%2x:%2x  \nDate:%2x/%2x/%2x",(uint16_t)rtc.hour,(uint16_t)rtc.min,(uint16_t)r
+             -tc.sec,(uint16_t)rtc.date,(uint16_t)rtc.month,(uint16_t)rtc.year);
+  74   2          }
+  75   1      
+  76   1          return (0);
+  77   1      }
+  78          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    133    ----
+   CONSTANT SIZE    =     36    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       7
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

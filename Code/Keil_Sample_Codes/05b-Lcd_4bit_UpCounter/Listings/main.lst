@@ -1,0 +1,89 @@
+C51 COMPILER V9.02   MAIN                                                                  02/26/2016 19:46:38 PAGE 1   
+
+
+C51 COMPILER V9.02, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE INCDIR(..\00-libfiles) DEBUG OBJECTEXTEN
+                    -D PRINT(.\Listings\main.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          /***************************************************************************************************
+   2                                             ExploreEmbedded
+   3          ****************************************************************************************************
+   4           * File:   main.c
+   5           * Version: 16.0
+   6           * Author: ExploreEmbedded
+   7           * Website: http://www.exploreembedded.com/wiki
+   8           * Description: This file contains the program to display 4-digit up counter on LCD in 4-bit mode. 
+   9          
+  10          The libraries have been tested on ExploreEmbedded development boards. We strongly believe that the
+  11          library works on any of development boards for respective controllers. However, ExploreEmbedded
+  12          disclaims any kind of hardware failure resulting out of usage of libraries, directly or indirectly.
+  13          Files may be subject to change without prior notice. The revision history contains the information
+  14          related to updates.
+  15          
+  16          
+  17          GNU GENERAL PUBLIC LICENSE:
+  18              Copyright (C) 2012  ExploreEmbedded
+  19          
+  20              This program is free software: you can redistribute it and/or modify
+  21              it under the terms of the GNU General Public License as published by
+  22              the Free Software Foundation, either version 3 of the License, or
+  23              (at your option) any later version.
+  24          
+  25              This program is distributed in the hope that it will be useful,
+  26              but WITHOUT ANY WARRANTY; without even the implied warranty of
+  27              MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  28              GNU General Public License for more details.
+  29          
+  30              You should have received a copy of the GNU General Public License
+  31              along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  32          
+  33          
+  34          Errors and omissions should be reported to codelibraries@exploreembedded.com
+  35          **************************************************************************************************/
+  36          #include "lcd.h"
+  37          #include "delay.h" 
+  38          
+  39          
+  40          /*
+  41           * 
+  42           */
+  43          int main() 
+  44          {
+  45   1          int count = 0;
+  46   1        
+  47   1          /*Connect RS->P0.0, RW->P0.1, EN->P0.2 and data bus to P0.4 to P0.7*/
+  48   1          LCD_SetUp(P0_0,P0_1,P0_2,P_NC,P_NC,P_NC,P_NC,P0_4,P0_5,P0_6,P0_7);
+  49   1          LCD_Init(2,16);
+  50   1          
+  51   1          LCD_DisplayString("Decimal");
+  52   1      
+  53   1          while(1)
+  54   1          {
+C51 COMPILER V9.02   MAIN                                                                  02/26/2016 19:46:38 PAGE 2   
+
+  55   2              LCD_GoToLine(1);
+  56   2              LCD_Printf("Count=%4d",count);
+  57   2              DELAY_ms(500);
+  58   2              count++;
+  59   2          }
+  60   1          
+  61   1          return (0);
+  62   1      }
+  63          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     90    ----
+   CONSTANT SIZE    =     18    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       2
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

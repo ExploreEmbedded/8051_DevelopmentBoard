@@ -1,0 +1,7 @@
+".\Objects\main.obj",
+".\Objects\delay.obj",
+".\Objects\gpio.obj",
+".\Objects\uart.obj",
+".\Objects\lcd.obj" 
+TO ".\Objects\06b-UART_Rx_Tx_Lcd" 
+PRINT(".\Listings\06b-UART_Rx_Tx_Lcd.m51") RAMSIZE(256) 

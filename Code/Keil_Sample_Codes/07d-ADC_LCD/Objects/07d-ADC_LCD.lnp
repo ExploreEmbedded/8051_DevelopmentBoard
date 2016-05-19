@@ -1,0 +1,7 @@
+".\Objects\main.obj",
+".\Objects\delay.obj",
+".\Objects\gpio.obj",
+".\Objects\lcd.obj",
+".\Objects\adc.obj" 
+TO ".\Objects\07d-ADC_LCD" 
+PRINT(".\Listings\07d-ADC_LCD.m51") RAMSIZE(256) 

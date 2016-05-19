@@ -1,0 +1,5 @@
+".\Objects\main.obj",
+".\Objects\uart.obj",
+".\Objects\delay.obj" 
+TO ".\Objects\06d-UART_Tx_Numbers" 
+PRINT(".\Listings\06d-UART_Tx_Numbers.m51") RAMSIZE(256) 

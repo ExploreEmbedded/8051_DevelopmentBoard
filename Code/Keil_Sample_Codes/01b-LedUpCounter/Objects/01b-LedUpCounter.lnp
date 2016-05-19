@@ -1,0 +1,3 @@
+".\Objects\main.obj" 
+TO ".\Objects\01b-LedUpCounter" 
+PRINT(".\Listings\01b-LedUpCounter.m51") RAMSIZE(256) 
