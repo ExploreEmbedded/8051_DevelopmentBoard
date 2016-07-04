@@ -1,4 +1,4 @@
-C51 COMPILER V9.02   EEPROM                                                                05/19/2016 14:51:22 PAGE 1   
+C51 COMPILER V9.02   EEPROM                                                                07/04/2016 15:49:08 PAGE 1   
 
 
 C51 COMPILER V9.02, COMPILATION OF MODULE EEPROM
@@ -62,7 +62,7 @@ line level    source
   48           * description:This function is used to write the data at specified EEPROM_address..
   49                         At24xx ic is enabled by sending its ID on the i2c bus.
   50                         After selecting At24xx ic,select the address where the data is to written
-C51 COMPILER V9.02   EEPROM                                                                05/19/2016 14:51:22 PAGE 2   
+C51 COMPILER V9.02   EEPROM                                                                07/04/2016 15:49:08 PAGE 2   
 
   51                         Write the Data at selected EppromAddress
   52                         Stop the I2c communication.
@@ -126,7 +126,7 @@ line level    source
  109   2      
  110   2              I2C_Start();                       // Start i2c communication
  111   2                                                 // connect to At24xx by sending its ID on I2c Bus
-C51 COMPILER V9.02   EEPROM                                                                05/19/2016 14:51:22 PAGE 3   
+C51 COMPILER V9.02   EEPROM                                                                07/04/2016 15:49:08 PAGE 3   
 
  112   2              I2C_Write(v_eepromId_u8); 
  113   2      #if (C_EepromIcType_U16 >  AT24C16)    
@@ -190,7 +190,7 @@ line level    source
  170          
  171          
  172              Note: User doesn't have to worry about the address decoding as the library takes care of it.
-C51 COMPILER V9.02   EEPROM                                                                05/19/2016 14:51:22 PAGE 4   
+C51 COMPILER V9.02   EEPROM                                                                07/04/2016 15:49:08 PAGE 4   
 
  173                    It is just an info, so that proper IC needs to be selected in the eeprom.h file.        
  174          
@@ -254,7 +254,7 @@ line level    source
  230          ****************************************************************************************************/
  231          #if ( ENABLE_EEPROM_WriteNBytes == 1)
               void EEPROM_WriteNBytes(uint16_t v_eepromAddress_u16, uint8_t *ptr_ramAddress_u8, uint16_t v_numOfBytes_u1
-C51 COMPILER V9.02   EEPROM                                                                05/19/2016 14:51:22 PAGE 5   
+C51 COMPILER V9.02   EEPROM                                                                07/04/2016 15:49:08 PAGE 5   
 
              -6)
               {
@@ -318,7 +318,7 @@ line level    source
  291           * description:This function is used to Write a String at specified EEPROM_address.
  292          
  293             NOTE: Null char is also written into the eeprom.
-C51 COMPILER V9.02   EEPROM                                                                05/19/2016 14:51:22 PAGE 6   
+C51 COMPILER V9.02   EEPROM                                                                07/04/2016 15:49:08 PAGE 6   
 
  294          ***************************************************************************************************/
  295          #if ( ENABLE_EEPROM_WriteString == 1)
@@ -382,7 +382,7 @@ line level    source
                   uint16_t v_eepromAddress_u16;
               
                   for(v_eepromAddress_u16=0;v_eepromAddress_u16<C_MaxEepromSize_U16;v_eepromAddress_u16++)
-C51 COMPILER V9.02   EEPROM                                                                05/19/2016 14:51:22 PAGE 7   
+C51 COMPILER V9.02   EEPROM                                                                07/04/2016 15:49:08 PAGE 7   
 
                   {
                       EEPROM_WriteByte(v_eepromAddress_u16,0xffu); // Write Each memory location with OxFF

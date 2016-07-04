@@ -1,4 +1,4 @@
-C51 COMPILER V9.02   RTC                                                                   05/19/2016 14:51:25 PAGE 1   
+C51 COMPILER V9.02   RTC                                                                   07/04/2016 15:49:11 PAGE 1   
 
 
 C51 COMPILER V9.02, COMPILATION OF MODULE RTC
@@ -62,7 +62,7 @@ line level    source
   48          
   49           * description :This function is used to Initialize the Ds1307 RTC.
   50          ***************************************************************************************************/
-C51 COMPILER V9.02   RTC                                                                   05/19/2016 14:51:25 PAGE 2   
+C51 COMPILER V9.02   RTC                                                                   07/04/2016 15:49:11 PAGE 2   
 
   51          void RTC_Init(void)
   52          {
@@ -126,7 +126,7 @@ line level    source
  109          
  110          
  111          
-C51 COMPILER V9.02   RTC                                                                   05/19/2016 14:51:25 PAGE 3   
+C51 COMPILER V9.02   RTC                                                                   07/04/2016 15:49:11 PAGE 3   
 
  112          
  113          /***************************************************************************************************

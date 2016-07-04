@@ -1,4 +1,4 @@
-C51 COMPILER V9.02   ADC                                                                   05/19/2016 14:51:21 PAGE 1   
+C51 COMPILER V9.02   ADC                                                                   07/04/2016 15:49:07 PAGE 1   
 
 
 C51 COMPILER V9.02, COMPILATION OF MODULE ADC
@@ -62,7 +62,7 @@ line level    source
   47           * I/P Arguments: none.
   48           * Return value    : none
   49          
-C51 COMPILER V9.02   ADC                                                                   05/19/2016 14:51:21 PAGE 2   
+C51 COMPILER V9.02   ADC                                                                   07/04/2016 15:49:07 PAGE 2   
 
   50           * description :This function initializes the ADC module.
   51          ***************************************************************************************************/
@@ -126,7 +126,7 @@ line level    source
  109   1              DELAY_us(25);
  110   1      
  111   1              adc_ALE=0;         //Pull ALE line to zero after starting the conversion.
-C51 COMPILER V9.02   ADC                                                                   05/19/2016 14:51:21 PAGE 3   
+C51 COMPILER V9.02   ADC                                                                   07/04/2016 15:49:07 PAGE 3   
 
  112   1              DELAY_us(50);
  113   1              adc_Start=0;       //Pull Start line to zero after starting the conversion.

@@ -252,8 +252,9 @@ void eeprom_test()
     UART_Printf("\n\r Make connections and hit 'k' to test! ");
     while(UART_RxChar()!='k');
 
-    while(1)
+    for(write_char='A';write_char<='Z';write_char++)
     {
+			
         UART_TxString("\n\rEeprom Write: \n");      //Print the message on UART
         UART_TxChar(write_char);                     //Print the char to be written
         EEPROM_WriteByte(eeprom_address,write_char);    // Write the data at memoryLocation    0x00
@@ -262,6 +263,8 @@ void eeprom_test()
         read_char = EEPROM_ReadByte(eeprom_address);    // Read the data from memoryLocation 0x00
         UART_TxChar(read_char);
     }
+		
+		while(1);
 }
 
 /***************************************************ADC******************************************
@@ -285,7 +288,7 @@ void adc_test()
 
     while(1)
     {
-        temp = ADC_GetAdcValue(0);
+        temp = ADC_GetAdcValue(0) * 2;
         pot = ADC_GetAdcValue(1);
         light = ADC_GetAdcValue(2);
         UART_Printf("\n\rtemp:%3d pot:%3d light:%3d", temp,pot,light);

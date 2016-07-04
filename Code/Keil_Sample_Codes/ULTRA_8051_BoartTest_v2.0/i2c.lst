@@ -1,4 +1,4 @@
-C51 COMPILER V9.02   I2C                                                                   05/19/2016 14:51:23 PAGE 1   
+C51 COMPILER V9.02   I2C                                                                   07/04/2016 15:49:09 PAGE 1   
 
 
 C51 COMPILER V9.02, COMPILATION OF MODULE I2C
@@ -62,7 +62,7 @@ line level    source
   47          /**************************************************************************************************/
   48          
   49          
-C51 COMPILER V9.02   I2C                                                                   05/19/2016 14:51:23 PAGE 2   
+C51 COMPILER V9.02   I2C                                                                   07/04/2016 15:49:09 PAGE 2   
 
   50          
   51          
@@ -126,7 +126,7 @@ line level    source
  109           * Return value  : none
  110          
  111           * description  :This function is used to generate I2C Stop Condition.
-C51 COMPILER V9.02   I2C                                                                   05/19/2016 14:51:23 PAGE 3   
+C51 COMPILER V9.02   I2C                                                                   07/04/2016 15:49:09 PAGE 3   
 
  112                           Stop Condition: SDA goes High when SCL is High.
  113          
@@ -190,7 +190,7 @@ line level    source
  171   1          i2c_Clock();
  172   1      }
  173          
-C51 COMPILER V9.02   I2C                                                                   05/19/2016 14:51:23 PAGE 4   
+C51 COMPILER V9.02   I2C                                                                   07/04/2016 15:49:09 PAGE 4   
 
  174          
  175          
@@ -254,7 +254,7 @@ line level    source
  233          ***************************************************************************************************/
  234                                          
  235          
-C51 COMPILER V9.02   I2C                                                                   05/19/2016 14:51:23 PAGE 5   
+C51 COMPILER V9.02   I2C                                                                   07/04/2016 15:49:09 PAGE 5   
 
  236          /***************************************************************************************************
  237                                   static void i2c_Clock()
@@ -318,7 +318,7 @@ MODULE INFORMATION:   STATIC OVERLAYABLE
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----
-C51 COMPILER V9.02   I2C                                                                   05/19/2016 14:51:23 PAGE 6   
+C51 COMPILER V9.02   I2C                                                                   07/04/2016 15:49:09 PAGE 6   
 
    DATA SIZE        =   ----       5
    IDATA SIZE       =   ----    ----
