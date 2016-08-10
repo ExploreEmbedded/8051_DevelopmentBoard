@@ -1,0 +1,119 @@
+BL51 BANKED LINKER/LOCATER V6.22                                                        08/10/2016  13:31:35  PAGE 1
+
+
+BL51 BANKED LINKER/LOCATER V6.22, INVOKED BY:
+C:\KEIL_V5\C51\BIN\BL51.EXE .\oled_i2c.obj, main.obj TO 13b-OledDisplayLogos RAMSIZE (256)
+
+
+MEMORY MODEL: SMALL
+
+
+INPUT MODULES INCLUDED:
+  .\oled_i2c.obj (OLED_I2C)
+  main.obj (MAIN)
+  C:\KEIL_V5\C51\LIB\C51S.LIB (?C_STARTUP)
+  C:\KEIL_V5\C51\LIB\C51S.LIB (?C?CLDOPTR)
+  C:\KEIL_V5\C51\LIB\C51S.LIB (?C?OFFXADD)
+
+
+LINK MAP OF MODULE:  13b-OledDisplayLogos (OLED_I2C)
+
+
+            TYPE    BASE      LENGTH    RELOCATION   SEGMENT NAME
+            -----------------------------------------------------
+
+            * * * * * * *   D A T A   M E M O R Y   * * * * * * *
+            REG     0000H     0008H     ABSOLUTE     "REG BANK 0"
+            DATA    0008H     0008H     UNIT         _DATA_GROUP_
+            DATA    0010H     0003H     UNIT         ?DT?_OLED_DISPLAYCHAR?OLED_I2C
+            DATA    0013H     0002H     UNIT         ?DT?OLED_I2C
+            IDATA   0015H     0001H     UNIT         ?STACK
+
+            * * * * * * *   C O D E   M E M O R Y   * * * * * * *
+            CODE    0000H     0003H     ABSOLUTE     
+            CODE    0003H     0400H     UNIT         ?CO?MAIN
+            CODE    0403H     03B6H     UNIT         ?CO?OLED_I2C
+            CODE    07B9H     0080H     UNIT         ?PR?OLED_INIT?OLED_I2C
+            CODE    0839H     006BH     UNIT         ?PR?OLED_CLEAR?OLED_I2C
+            CODE    08A4H     005FH     UNIT         ?PR?_OLED_DISPLAYCHAR?OLED_I2C
+            CODE    0903H     0040H     UNIT         ?PR?_OLED_SETCURSOR?OLED_I2C
+            CODE    0943H     0040H     UNIT         ?PR?_OLED_DISPLAYLOGO?OLED_I2C
+            CODE    0983H     0039H     UNIT         ?C?LIB_CODE
+            CODE    09BCH     0021H     UNIT         ?PR?_OLEDSENDBYTE?OLED_I2C
+            CODE    09DDH     0014H     UNIT         ?PR?_OLEDSENDCOMMAND?OLED_I2C
+            CODE    09F1H     000EH     UNIT         ?PR?MAIN?MAIN
+            CODE    09FFH     000DH     UNIT         ?PR?_OLEDSENDSTART?OLED_I2C
+            CODE    0A0CH     000CH     UNIT         ?PR?OLED_GOTONEXTLINE?OLED_I2C
+            CODE    0A18H     000CH     UNIT         ?C_C51STARTUP
+            CODE    0A24H     000AH     UNIT         ?PR?OLEDWAITFORACK?OLED_I2C
+            CODE    0A2EH     0009H     UNIT         ?PR?OLEDSENDSTOP?OLED_I2C
+
+
+
+OVERLAY MAP OF MODULE:   13b-OledDisplayLogos (OLED_I2C)
+
+
+SEGMENT                                  DATA_GROUP 
+  +--> CALLED SEGMENT                  START    LENGTH
+------------------------------------------------------
+?C_C51STARTUP                          -----    -----
+  +--> ?PR?MAIN?MAIN
+
+BL51 BANKED LINKER/LOCATER V6.22                                                      08/10/2016  13:31:35  PAGE 2
+
+
+?PR?MAIN?MAIN                          -----    -----
+  +--> ?PR?OLED_INIT?OLED_I2C
+  +--> ?CO?MAIN
+  +--> ?PR?_OLED_DISPLAYLOGO?OLED_I2C
+
+?PR?OLED_INIT?OLED_I2C                 -----    -----
+  +--> ?PR?_OLEDSENDCOMMAND?OLED_I2C
+  +--> ?PR?OLED_CLEAR?OLED_I2C
+
+?PR?_OLEDSENDCOMMAND?OLED_I2C          000FH    0001H
+  +--> ?PR?_OLEDSENDSTART?OLED_I2C
+  +--> ?PR?_OLEDSENDBYTE?OLED_I2C
+  +--> ?PR?OLEDSENDSTOP?OLED_I2C
+
+?PR?_OLEDSENDSTART?OLED_I2C            -----    -----
+  +--> ?PR?_OLEDSENDBYTE?OLED_I2C
+
+?PR?_OLEDSENDBYTE?OLED_I2C             -----    -----
+  +--> ?PR?OLEDWAITFORACK?OLED_I2C
+
+?PR?OLED_CLEAR?OLED_I2C                0008H    0002H
+  +--> ?PR?_OLEDSENDCOMMAND?OLED_I2C
+  +--> ?PR?_OLEDSENDSTART?OLED_I2C
+  +--> ?PR?_OLEDSENDBYTE?OLED_I2C
+
+?PR?_OLED_DISPLAYLOGO?OLED_I2C         0008H    0005H
+  +--> ?PR?_OLED_SETCURSOR?OLED_I2C
+  +--> ?PR?_OLEDSENDSTART?OLED_I2C
+  +--> ?PR?_OLEDSENDBYTE?OLED_I2C
+
+?PR?_OLED_SETCURSOR?OLED_I2C           000DH    0002H
+  +--> ?PR?_OLEDSENDCOMMAND?OLED_I2C
+  +--> ?PR?_OLEDSENDSTART?OLED_I2C
+  +--> ?PR?_OLEDSENDBYTE?OLED_I2C
+
+
+
+SYMBOL TABLE OF MODULE:  13b-OledDisplayLogos (OLED_I2C)
+
+  VALUE           TYPE          NAME
+  ----------------------------------
+
+  -------         MODULE        ?C?CLDOPTR
+  C:0983H         PUBLIC        ?C?CLDOPTR
+  -------         ENDMOD        ?C?CLDOPTR
+
+  -------         MODULE        ?C?OFFXADD
+  C:09B0H         PUBLIC        ?C?OFFXADD
+  -------         ENDMOD        ?C?OFFXADD
+
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_OLED_DISPLAYCHAR?OLED_I2C
+
+Program Size: data=22.0 xdata=0 code=2615
+LINK/LOCATE RUN COMPLETE.  1 WARNING(S),  0 ERROR(S)

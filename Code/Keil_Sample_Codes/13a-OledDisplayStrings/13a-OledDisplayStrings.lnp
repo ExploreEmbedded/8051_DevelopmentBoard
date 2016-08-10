@@ -1,0 +1,4 @@
+".\oled_i2c.obj",
+"main.obj" 
+TO "13a-OledDisplayStrings" 
+RAMSIZE(256) 

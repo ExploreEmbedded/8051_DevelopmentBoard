@@ -1,0 +1,1143 @@
+C51 COMPILER V9.02   OLED_I2C                                                              08/10/2016 13:31:34 PAGE 1   
+
+
+C51 COMPILER V9.02, COMPILATION OF MODULE OLED_I2C
+OBJECT MODULE PLACED IN .\oled_i2c.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE ..\00-libfiles\oled_i2c.c BROWSE INCDIR(..\00-libfiles) PRINT(.\oled_i2c
+                    -.lst) OBJECT(.\oled_i2c.obj)
+
+line level    source
+
+   1          /***************************************************************************************************
+   2                                             ExploreEmbedded Copyright Notice 
+   3           ****************************************************************************************************
+   4           * File:   oled_i2c.c
+   5           * Version: 16.0
+   6           * Author: ExploreEmbedded
+   7           * Website: http://www.exploreembedded.com/wiki
+   8           * Description: SSD1306 I2C OLED library to display strings, numbers, graphs and logos
+   9          
+  10          This code has been developed and tested on ExploreEmbedded boards.  
+  11          We strongly believe that the library works on any of development boards for respective controllers. 
+  12          Check this link http://www.exploreembedded.com/wiki for awesome tutorials on 8051,PIC,AVR,ARM,Robotics,RTO
+             -S,IOT.
+  13          ExploreEmbedded invests substantial time and effort developing open source HW and SW tools, to support con
+             -sider 
+  14          buying the ExploreEmbedded boards.
+  15          
+  16          The ExploreEmbedded libraries and examples are licensed under the terms of the new-bsd license(two-clause 
+             -bsd license).
+  17          See also: http://www.opensource.org/licenses/bsd-license.php
+  18          EXPLOREEMBEDDED DISCLAIMS ANY KIND OF HARDWARE FAILURE RESULTING OUT OF USAGE OF LIBRARIES, DIRECTLY OR
+  19          INDIRECTLY. FILES MAY BE SUBJECT TO CHANGE WITHOUT PRIOR NOTICE. THE REVISION HISTORY CONTAINS THE INFORMA
+             -TION 
+  20          RELATED TO UPDATES.
+  21          
+  22          Permission to use, copy, modify, and distribute this software and its documentation for any purpose
+  23          and without fee is hereby granted, provided that this copyright notices appear in all copies 
+  24          and that both those copyright notices and this permission notice appear in supporting documentation.
+  25           **************************************************************************************************/
+  26          
+  27           /* The orginal Arduino libaray from rinkyDink is modified for low end controllers with small RAM memory.
+  28              ExploreEmbedded oled_i2c.c library does not have a RAM buffer and hence different fonts and graphics a
+             -re not supported.
+  29                  You can download the arduino library from this link http://www.rinkydinkelectronics.com/library.php?id=79
+             - .
+  30                          
+  31            OLED_I2C.cpp - Arduino/chipKit library support for 128x64 pixel SSD1306 OLEDs
+  32            Copyright (C)2015 Rinky-Dink Electronics, Henning Karlsen. All right reserved
+  33            
+  34            This library has been made to make it easy to use 128x64 pixel OLED displays
+  35            based on the SSD1306 controller chip with an Arduino or a chipKit.
+  36          
+  37            You can always find the latest version of the library at 
+  38            http://www.RinkyDinkElectronics.com/
+  39          
+  40            This library is free software; you can redistribute it and/or
+  41            modify it under the terms of the CC BY-NC-SA 3.0 license.
+  42            Please see the included documents for further information.
+  43          
+  44            Commercial use of this library requires you to buy a license that
+  45            will allow commercial use. This includes using the library,
+  46            modified or not, as a tool to sell products.
+  47          
+  48            The license applies to all part of the library including the 
+C51 COMPILER V9.02   OLED_I2C                                                              08/10/2016 13:31:34 PAGE 2   
+
+  49            examples and tools supplied with the library.
+  50          */
+  51          
+  52          #include <stdio.h>
+  53          #include <stdarg.h>
+  54          #include <reg51.h>
+  55          #include "oled_i2c.h"
+  56          #include "stdutils.h"
+  57          #include "delay.h"
+  58          
+  59          
+  60          sbit SCL_PIN = P0^0;
+  61          sbit SDA_PIN = P0^1;
+  62          
+  63          
+  64          uint8_t OledLineNum,OledCursorPos;
+  65          
+  66          
+  67          
+  68          /***************************************************************************************************
+  69                                            Local Function Declaration
+  70           ***************************************************************************************************/
+  71          void oledSendCommand(uint8_t cmd);
+  72          void oledSendStart(uint8_t address);
+  73          void oledSendStop(void);
+  74          void oledWaitForAck(void);
+  75          void oledSendByte(uint8_t ch);
+  76          /**************************************************************************************************/
+  77          
+  78          
+  79          #define FONT_SIZE 5
+  80          code const OledFontTable[][FONT_SIZE]=
+  81          {
+  82                  0x00, 0x00, 0x00, 0x00, 0x00,   // space
+  83                  0x00, 0x00, 0x2f, 0x00, 0x00,   // !
+  84                  0x00, 0x07, 0x00, 0x07, 0x00,   // "
+  85                  0x14, 0x7f, 0x14, 0x7f, 0x14,   // #
+  86                  0x24, 0x2a, 0x7f, 0x2a, 0x12,   // $
+  87                  0x23, 0x13, 0x08, 0x64, 0x62,   // %
+  88                  0x36, 0x49, 0x55, 0x22, 0x50,   // &
+  89                  0x00, 0x05, 0x03, 0x00, 0x00,   // '
+  90                  0x00, 0x1c, 0x22, 0x41, 0x00,   // (
+  91                  0x00, 0x41, 0x22, 0x1c, 0x00,   // )
+  92                  0x14, 0x08, 0x3E, 0x08, 0x14,   // *
+  93                  0x08, 0x08, 0x3E, 0x08, 0x08,   // +
+  94                  0x00, 0x00, 0xA0, 0x60, 0x00,   // ,
+  95                  0x08, 0x08, 0x08, 0x08, 0x08,   // -
+  96                  0x00, 0x60, 0x60, 0x00, 0x00,   // .
+  97                  0x20, 0x10, 0x08, 0x04, 0x02,   // /
+  98          
+  99                  0x3E, 0x51, 0x49, 0x45, 0x3E,   // 0
+ 100                  0x00, 0x42, 0x7F, 0x40, 0x00,   // 1
+ 101                  0x42, 0x61, 0x51, 0x49, 0x46,   // 2
+ 102                  0x21, 0x41, 0x45, 0x4B, 0x31,   // 3
+ 103                  0x18, 0x14, 0x12, 0x7F, 0x10,   // 4
+ 104                  0x27, 0x45, 0x45, 0x45, 0x39,   // 5
+ 105                  0x3C, 0x4A, 0x49, 0x49, 0x30,   // 6
+ 106                  0x01, 0x71, 0x09, 0x05, 0x03,   // 7
+ 107                  0x36, 0x49, 0x49, 0x49, 0x36,   // 8
+ 108                  0x06, 0x49, 0x49, 0x29, 0x1E,   // 9
+ 109          
+ 110                  0x00, 0x36, 0x36, 0x00, 0x00,   // :
+C51 COMPILER V9.02   OLED_I2C                                                              08/10/2016 13:31:34 PAGE 3   
+
+ 111                  0x00, 0x56, 0x36, 0x00, 0x00,   // ;
+ 112                  0x08, 0x14, 0x22, 0x41, 0x00,   // <
+ 113                  0x14, 0x14, 0x14, 0x14, 0x14,   // =
+ 114                  0x00, 0x41, 0x22, 0x14, 0x08,   // >
+ 115                  0x02, 0x01, 0x51, 0x09, 0x06,   // ?
+ 116                  0x32, 0x49, 0x59, 0x51, 0x3E,   // @
+ 117          
+ 118                  0x7C, 0x12, 0x11, 0x12, 0x7C,   // A
+ 119                  0x7F, 0x49, 0x49, 0x49, 0x36,   // B
+ 120                  0x3E, 0x41, 0x41, 0x41, 0x22,   // C
+ 121                  0x7F, 0x41, 0x41, 0x22, 0x1C,   // D
+ 122                  0x7F, 0x49, 0x49, 0x49, 0x41,   // E
+ 123                  0x7F, 0x09, 0x09, 0x09, 0x01,   // F
+ 124                  0x3E, 0x41, 0x49, 0x49, 0x7A,   // G
+ 125                  0x7F, 0x08, 0x08, 0x08, 0x7F,   // H
+ 126                  0x00, 0x41, 0x7F, 0x41, 0x00,   // I
+ 127                  0x20, 0x40, 0x41, 0x3F, 0x01,   // J
+ 128                  0x7F, 0x08, 0x14, 0x22, 0x41,   // K
+ 129                  0x7F, 0x40, 0x40, 0x40, 0x40,   // L
+ 130                  0x7F, 0x02, 0x0C, 0x02, 0x7F,   // M
+ 131                  0x7F, 0x04, 0x08, 0x10, 0x7F,   // N
+ 132                  0x3E, 0x41, 0x41, 0x41, 0x3E,   // O
+ 133                  0x7F, 0x09, 0x09, 0x09, 0x06,   // P
+ 134                  0x3E, 0x41, 0x51, 0x21, 0x5E,   // Q
+ 135                  0x7F, 0x09, 0x19, 0x29, 0x46,   // R
+ 136                  0x46, 0x49, 0x49, 0x49, 0x31,   // S
+ 137                  0x01, 0x01, 0x7F, 0x01, 0x01,   // T
+ 138                  0x3F, 0x40, 0x40, 0x40, 0x3F,   // U
+ 139                  0x1F, 0x20, 0x40, 0x20, 0x1F,   // V
+ 140                  0x3F, 0x40, 0x38, 0x40, 0x3F,   // W
+ 141                  0x63, 0x14, 0x08, 0x14, 0x63,   // X
+ 142                  0x07, 0x08, 0x70, 0x08, 0x07,   // Y
+ 143                  0x61, 0x51, 0x49, 0x45, 0x43,   // Z
+ 144          
+ 145                  0x00, 0x7F, 0x41, 0x41, 0x00,   // [
+ 146                  0x55, 0xAA, 0x55, 0xAA, 0x55,   // Backslash (Checker pattern)
+ 147                  0x00, 0x41, 0x41, 0x7F, 0x00,   // ]
+ 148                  0x04, 0x02, 0x01, 0x02, 0x04,   // ^
+ 149                  0x40, 0x40, 0x40, 0x40, 0x40,   // _
+ 150                  0x00, 0x03, 0x05, 0x00, 0x00,   // `
+ 151          
+ 152                  0x20, 0x54, 0x54, 0x54, 0x78,   // a
+ 153                  0x7F, 0x48, 0x44, 0x44, 0x38,   // b
+ 154                  0x38, 0x44, 0x44, 0x44, 0x20,   // c
+ 155                  0x38, 0x44, 0x44, 0x48, 0x7F,   // d
+ 156                  0x38, 0x54, 0x54, 0x54, 0x18,   // e
+ 157                  0x08, 0x7E, 0x09, 0x01, 0x02,   // f
+ 158                  0x18, 0xA4, 0xA4, 0xA4, 0x7C,   // g
+ 159                  0x7F, 0x08, 0x04, 0x04, 0x78,   // h
+ 160                  0x00, 0x44, 0x7D, 0x40, 0x00,   // i
+ 161                  0x40, 0x80, 0x84, 0x7D, 0x00,   // j
+ 162                  0x7F, 0x10, 0x28, 0x44, 0x00,   // k
+ 163                  0x00, 0x41, 0x7F, 0x40, 0x00,   // l
+ 164                  0x7C, 0x04, 0x18, 0x04, 0x78,   // m
+ 165                  0x7C, 0x08, 0x04, 0x04, 0x78,   // n
+ 166                  0x38, 0x44, 0x44, 0x44, 0x38,   // o
+ 167                  0xFC, 0x24, 0x24, 0x24, 0x18,   // p
+ 168                  0x18, 0x24, 0x24, 0x18, 0xFC,   // q
+ 169                  0x7C, 0x08, 0x04, 0x04, 0x08,   // r
+ 170                  0x48, 0x54, 0x54, 0x54, 0x20,   // s
+ 171                  0x04, 0x3F, 0x44, 0x40, 0x20,   // t
+ 172                  0x3C, 0x40, 0x40, 0x20, 0x7C,   // u
+C51 COMPILER V9.02   OLED_I2C                                                              08/10/2016 13:31:34 PAGE 4   
+
+ 173                  0x1C, 0x20, 0x40, 0x20, 0x1C,   // v
+ 174                  0x3C, 0x40, 0x30, 0x40, 0x3C,   // w
+ 175                  0x44, 0x28, 0x10, 0x28, 0x44,   // x
+ 176                  0x1C, 0xA0, 0xA0, 0xA0, 0x7C,   // y
+ 177                  0x44, 0x64, 0x54, 0x4C, 0x44,   // z
+ 178          
+ 179                  0x00, 0x10, 0x7C, 0x82, 0x00,   // {
+ 180                  0x00, 0x00, 0xFF, 0x00, 0x00,   // |
+ 181                  0x00, 0x82, 0x7C, 0x10, 0x00,   // }
+ 182                  0x00, 0x06, 0x09, 0x09, 0x06    // ~ (Degrees)
+ 183          };
+ 184          
+ 185          
+ 186          
+ 187          /**************************************************************************************************
+ 188                                          void OLED_Init()
+ 189           ***************************************************************************************************
+ 190           * I/P Arguments:  none
+ 191           * Return value : none
+ 192          
+ 193           * description  :This function is used to initialize the OLED in the normal mode.
+ 194                          After initializing the OLED, It clears the OLED and sets the cursor to first line first po
+             -sition. .
+ 195          
+ 196           **************************************************************************************************/
+ 197          void OLED_Init(void)
+ 198          { 
+ 199   1          oledSendCommand(SSD1306_DISPLAY_OFF);
+ 200   1          oledSendCommand(SSD1306_SET_DISPLAY_CLOCK_DIV_RATIO);
+ 201   1          oledSendCommand(0x80);
+ 202   1          oledSendCommand(SSD1306_SET_MULTIPLEX_RATIO);
+ 203   1          oledSendCommand(0x3F);
+ 204   1          oledSendCommand(SSD1306_SET_DISPLAY_OFFSET);
+ 205   1          oledSendCommand(0x0);
+ 206   1          oledSendCommand(SSD1306_SET_START_LINE | 0x0);
+ 207   1          oledSendCommand(SSD1306_CHARGE_PUMP);
+ 208   1          oledSendCommand(0x14);
+ 209   1          oledSendCommand(SSD1306_MEMORY_ADDR_MODE);
+ 210   1          oledSendCommand(0x00);
+ 211   1          oledSendCommand(SSD1306_SET_SEGMENT_REMAP | 0x1);
+ 212   1          oledSendCommand(SSD1306_COM_SCAN_DIR_DEC);
+ 213   1          oledSendCommand(SSD1306_SET_COM_PINS);
+ 214   1          oledSendCommand(0x12);
+ 215   1          oledSendCommand(SSD1306_SET_CONTRAST_CONTROL);
+ 216   1          oledSendCommand(0xCF);
+ 217   1          oledSendCommand(SSD1306_SET_PRECHARGE_PERIOD);
+ 218   1          oledSendCommand(0xF1);
+ 219   1          oledSendCommand(SSD1306_SET_VCOM_DESELECT);
+ 220   1          oledSendCommand(0x40);
+ 221   1          oledSendCommand(SSD1306_DISPLAY_ALL_ON_RESUME);
+ 222   1          oledSendCommand(SSD1306_NORMAL_DISPLAY);
+ 223   1          oledSendCommand(SSD1306_DISPLAY_ON);
+ 224   1      
+ 225   1          OLED_Clear();  /* Clear the complete LCD during init */
+ 226   1      }
+ 227          
+ 228          
+ 229          
+ 230          
+ 231          
+ 232          /***************************************************************************************************
+ 233                                 void OLED_DisplayChar( char ch)
+C51 COMPILER V9.02   OLED_I2C                                                              08/10/2016 13:31:34 PAGE 5   
+
+ 234           ****************************************************************************************************
+ 235           * I/P Arguments: ASCII value of the char to be displayed.
+ 236           * Return value    : none
+ 237          
+ 238           * description  : This function sends a character to be displayed on LCD.
+ 239                            Any valid ascii value can be passed to display respective character
+ 240          
+ 241           ****************************************************************************************************/
+ 242          void OLED_DisplayChar(uint8_t ch)
+ 243          {
+ 244   1          uint8_t dat,i=0;
+ 245   1      
+ 246   1          if(((OledCursorPos+FONT_SIZE)>=128) || (ch=='\n'))
+ 247   1          {
+ 248   2              /* If the cursor has reached to end of line on page1
+ 249   2              OR NewLine command is issued Then Move the cursor to next line */
+ 250   2              OLED_GoToNextLine();
+ 251   2          }
+ 252   1          if(ch!='\n') /* TODO */
+ 253   1          {
+ 254   2              ch = ch-0x20; // As the lookup table starts from Space(0x20)
+ 255   2      
+ 256   2              while(1)
+ 257   2              {
+ 258   3                  dat= OledFontTable[ch][i]; /* Get the data to be displayed for LookUptable*/
+ 259   3      
+ 260   3      
+ 261   3                  oledSendByte(dat); /* Display the data and keep track of cursor */
+ 262   3                  OledCursorPos++;
+ 263   3      
+ 264   3                  i++;
+ 265   3      
+ 266   3                  if(i==FONT_SIZE) /* Exit the loop if End of char is encountered */
+ 267   3                  {
+ 268   4                      oledSendByte(0x00); /* Display the data and keep track of cursor */
+ 269   4                      OledCursorPos++;
+ 270   4                      break;
+ 271   4                  }
+ 272   3              }
+ 273   2          }
+ 274   1      }
+ 275          
+ 276          
+ 277          
+ 278          
+ 279          
+ 280          
+ 281          /***************************************************************************************************
+ 282                                 void OLED_DisplayString(char *ptr_stringPointer_u8)
+ 283           ****************************************************************************************************
+ 284           * I/P Arguments: String(Address of the string) to be displayed.
+ 285           * Return value    : none
+ 286          
+ 287           * description  :
+ 288                         This function is used to display the ASCII string on the lcd.
+ 289                           1.The ptr_stringPointer_u8 points to the first char of the string
+ 290                              and traverses till the end(NULL CHAR)and displays a char each time.
+ 291          
+ 292           ****************************************************************************************************/
+ 293          #if(Enable_OLED_DisplayString==1)
+              void OLED_DisplayString(uint8_t *ptr)
+              {
+C51 COMPILER V9.02   OLED_I2C                                                              08/10/2016 13:31:34 PAGE 6   
+
+                  while(*ptr)
+                      OLED_DisplayChar(*ptr++);
+              }
+              #endif
+ 300          
+ 301          
+ 302          
+ 303          
+ 304          
+ 305          /***************************************************************************************************
+ 306                         void OLED_ScrollMessage(uint8_t v_lineNumber_u8, char *ptr_msgPointer_u8)
+ 307           ****************************************************************************************************
+ 308           * I/P Arguments:
+ 309                            uint8_t  : Line number on which the message has to be scrolled
+ 310                            char *: pointer to the string to be scrolled
+ 311          
+ 312           * Return value    : none
+ 313          
+ 314           * description  :This function scrolls the given message on the specified line.
+ 315                           If the specified line number is out of range then the message
+ 316                           will be scrolled on first line
+ 317           ****************************************************************************************************/
+ 318          #if (Enable_OLED_ScrollMessage == 1)
+              void OLED_ScrollMessage(uint8_t lineNum, char *strptr)
+              {
+                  unsigned char i,j,k,l,cursor,ch;
+              
+                  if(lineNum > 7)
+                      lineNum = 0; // Select first line if the lineNumberToStartDisplay is out of range
+              
+                  for(i=0;strptr[i];i++)
+                  {
+                      /* Loop to display the complete string,    each time 16 chars are displayed and
+                      pointer is incremented to point to next char */
+              
+                      for(k=0;k<6;k++)
+                      {
+                          OLED_SetCursor(lineNum,6-k);     //Move the Cursor to first line
+                          cursor = 6-k;
+              
+                          for(j=0;(strptr[i+j] && (cursor<128));j++)
+                          {
+                              ch = strptr[i+j]-0x20;
+                              for(l=0;(l<5) && (cursor<128);l++)//Display first 16 Chars or till Null char is reached
+                              {
+                                  oledSendByte(OledFontTable[ch][l]);
+                                  cursor++;
+                              }
+              
+                              oledSendByte(0);
+                              DELAY_us(10);
+                              cursor++;
+                          }
+                          DELAY_ms(20);
+                      }
+                  }
+              }
+              #endif
+ 354          
+ 355          
+ 356          
+ 357          
+C51 COMPILER V9.02   OLED_I2C                                                              08/10/2016 13:31:34 PAGE 7   
+
+ 358          
+ 359          /***************************************************************************************************
+ 360          void OLED_DisplayNumber(uint8_t v_numericSystem_u8, uint32_t v_number_u32, uint8_t v_numOfDigitsToDisplay_
+             -u8)
+ 361           ****************************************************************************************************
+ 362           * Function name:  OLED_DisplayNumber()
+ 363           * I/P Arguments:
+ 364                            uint8_t :  specifies type of number C_BINARY_U8(2),C_DECIMAL_U8(10), C_HEX_U8(16)
+ 365                            uint32_t: Number to be displayed on the LCD.
+ 366                            uint8_t : Number of digits to be displayed
+ 367          
+ 368           * Return value    : none
+ 369          
+ 370           * description  :This function is used to display a max of 10digit decimal/Hex number OR specified
+ 371                           number of bits for binary number.
+ 372          
+ 373                          1st parameter specifies type of number C_BINARY_U8(2),C_DECIMAL_U8(10), C_HEX_U8(16)
+ 374                          3rd parameter specifies the number of digits from the right side to be displayed
+ 375                           The output for the input combinations is as below
+ 376          
+ 377              Binary:     1.(2,10,4) then 4-LSB will be displayed ie. 1010
+ 378                          2.(C_BINARY_U8,10,8) then 8-LSB will be displayed ie. 00001010
+ 379                          3.(C_BINARY_U8,10,2) then 2-LSB will be displayed ie. 10
+ 380          
+ 381              Decimal:    4.(10,12345,4) then 4-digits ie. 2345 will be displayed
+ 382                          5.(C_DECIMAL_U8,12345,6) then 6-digits ie. 012345 will be displayed
+ 383                          6.(10,12345,C_DisplayDefaultDigits_U8) then 12345 will be displayed.\
+ 384          
+ 385              Hex:        7.(16,0x12AB,3) then 3-digits ie. 2AB will be displayed
+ 386                          8.(C_HEX_U8,0x12AB,6) then 6-digits ie. 0012AB will be displayed
+ 387                          9.(C_HEX_U8,0x12AB,C_DisplayDefaultDigits_U8) then 12AB will be displayed.
+ 388           ****************************************************************************************************/
+ 389          #if ((Enable_OLED_DisplayNumber == 1) || (Enable_OLED_DisplayFloatNumber == 1) || (Enable_OLED_Printf==1))
+              void OLED_DisplayNumber(uint8_t v_numericSystem_u8, uint32_t v_number_u32, uint8_t v_numOfDigitsToDisplay_
+             -u8)
+              {
+                  uint8_t i=0,a[10];
+              
+                  if(C_BINARY_U8 == v_numericSystem_u8)
+                  {
+                      while(v_numOfDigitsToDisplay_u8!=0)
+                      {
+                          /* Start Extracting the bits from the specified bit positions.
+                        Get the Acsii values of the bits and display */
+                          i = util_GetBitStatus(v_number_u32,(v_numOfDigitsToDisplay_u8-1));
+                          OLED_DisplayChar(util_Dec2Ascii(i));
+                          v_numOfDigitsToDisplay_u8--;
+                      }
+                  }
+                  else if(v_number_u32==0)
+                  {
+                      /* If the number is zero then update the array with the same for displaying */
+                      for(i=0;((i<v_numOfDigitsToDisplay_u8) && (i<C_MaxDigitsToDisplay_U8));i++)
+                          OLED_DisplayChar('0');
+                  }
+                  else
+                  {
+                      for(i=0;i<v_numOfDigitsToDisplay_u8;i++)
+                      {
+                          /* Continue extracting the digits from right side
+                             till the Specified v_numOfDigitsToDisplay_u8 */
+                          if(v_number_u32!=0)
+C51 COMPILER V9.02   OLED_I2C                                                              08/10/2016 13:31:34 PAGE 8   
+
+                          {
+                              /* Extract the digits from the number till it becomes zero.
+                              First get the remainder and divide the number by TypeOfNum(10-Dec, 16-Hex) each time.
+              
+                              example for Decimal number:
+                              If v_number_u32 = 123 then extracted remainder will be 3 and number will be 12.
+                              The process continues till it becomes zero or max digits reached*/
+                              a[i]=util_GetMod32(v_number_u32,v_numericSystem_u8);
+                              v_number_u32=v_number_u32/v_numericSystem_u8;
+                          }
+                          else if( (v_numOfDigitsToDisplay_u8 == C_DisplayDefaultDigits_U8) ||
+                                  (v_numOfDigitsToDisplay_u8 > C_MaxDigitsToDisplay_U8))
+                          {
+                              /* Stop the iteration if the Max number of digits are reached or
+                               the user expects exact(Default) digits in the number to be displayed */
+                              break;
+                          }
+                          else
+                          {
+                              /* In case user expects more digits to be displayed than the actual digits in number,
+                                then update the remaining digits with zero.
+                             Ex: v_num_u32 is 123 and user wants five digits then 00123 has to be displayed */
+                              a[i]=0;
+                          }
+                      }
+              
+                      while(i!=0)
+                      {
+                          /* Finally get the ascii values of the digits and display*/
+                          OLED_DisplayChar(util_Hex2Ascii(a[i-1]));
+                          i--;
+                      }
+                  }
+              }
+              #endif
+ 453          
+ 454          
+ 455          
+ 456          
+ 457          
+ 458          
+ 459          
+ 460          
+ 461          /*************************************************************************************************
+ 462                      void  OLED_DisplayFloatNumber(double v_floatNum_f32)
+ 463           **************************************************************************************************
+ 464           * Function name:  OLED_DisplayFloatNumber()
+ 465           * I/P Arguments: float: float Number to be displayed on the LCD.
+ 466          
+ 467           * Return value    : none
+ 468          
+ 469           * description  :This function is used to display a floating point number
+ 470                           It supports 6digits of precision.
+ 471          
+ 472              Note: Float will be disabled by default as it takes huge controller resources
+ 473                   It can be enabled by changing value of Enable_OLED_DisplayFloatNumber to 1 in lcd.h
+ 474           ***************************************************************************************************/
+ 475          #if (Enable_OLED_DisplayFloatNumber == 1)
+              void OLED_DisplayFloatNumber(double v_floatNum_f32)
+              {
+                  uint32_t v_temp_u32;
+                  /* Dirty hack to support the floating point by extracting the integer and fractional part.
+C51 COMPILER V9.02   OLED_I2C                                                              08/10/2016 13:31:34 PAGE 9   
+
+                    1.Type cast the number to int to get the integer part.
+                    2.Display the extracted integer part followed by a decimal point(.)
+                    3.Later the integer part is made zero by subtracting with the extracted integer value.
+                    4.Finally the fractional part is multiplied by 100000 to support 6-digit precision */
+              
+                  v_temp_u32 = (uint32_t) v_floatNum_f32;
+                  OLED_DisplayNumber(C_DECIMAL_U8,v_temp_u32,C_DisplayDefaultDigits_U8);
+              
+                  OLED_DisplayChar('.');
+              
+                  v_floatNum_f32 = v_floatNum_f32 - v_temp_u32;
+                  v_temp_u32 = v_floatNum_f32 * 1000000;
+                  OLED_DisplayNumber(C_DECIMAL_U8,v_temp_u32,C_DisplayDefaultDigits_U8);
+              }
+              #endif
+ 495          
+ 496          
+ 497          
+ 498          
+ 499          
+ 500          
+ 501          /*************************************************************************************************
+ 502                      void OLED_Printf(const char *argList, ...)
+ 503           **************************************************************************************************
+ 504           * Function name:  OLED_Printf()
+ 505           * I/P Arguments: variable length arguments similar to printf
+ 506          
+ 507           * Return value    : none
+ 508          
+ 509           * description  :This function is similar to printf function in C.
+ 510                           It takes the arguments with specified format and prints accordingly
+ 511                           The supported format specifiers are as below.
+ 512                           1. %c: character
+ 513                           2. %d: signed 16-bit number
+ 514                           3. %D: signed 32-bit number
+ 515                           4. %u: unsigned 16-bit number
+ 516                           5. %U: unsigned 32-bit number
+ 517                           6. %b: 16-bit binary number
+ 518                           7. %B: 32-bit binary number
+ 519                           8. %f: Float number
+ 520                           9. %x: 16-bit hexadecimal number
+ 521                           10. %X: 32-bit hexadecimal number
+ 522                           11. %s: String
+ 523          
+ 524          
+ 525          
+ 526            Extra feature is available to specify the number of digits to be displayed using printf.
+ 527               ex: %4d: will display the lower four digits of the decimal number.
+ 528                   %12b: will display the 12-LSB of the number
+ 529                   %d: Will display the exact digits of the number
+ 530          
+ 531          #####: In case of printing the 8-bit variables, it is recommended to type cast and promote them to uint16_
+             -t.
+ 532                  uint8_t v_Num_u8;
+ 533                  OLED_Printf("num1:%u",(uint16_t)v_Num_u8);
+ 534           **************************************************************************************************/
+ 535          #if ( Enable_OLED_Printf == 1 )
+              void OLED_Printf(const char *argList, ...)
+              {
+                  const char *ptr;
+                  va_list argp;
+                  sint16_t v_num_s16;
+C51 COMPILER V9.02   OLED_I2C                                                              08/10/2016 13:31:34 PAGE 10  
+
+                  sint32_t v_num_s32;
+                  uint16_t v_num_u16;
+                  uint32_t v_num_u32;
+                  char *str;
+                  char  ch;
+                  uint8_t v_numOfDigitsToDisp_u8;
+              #if (Enable_OLED_DisplayFloatNumber == 1)
+                  double v_floatNum_f32;
+              #endif
+              
+                  va_start(argp, argList);
+              
+                  /* Loop through the list to extract all the input arguments */
+                  for(ptr = argList; *ptr != '\0'; ptr++)
+                  {
+              
+                      ch= *ptr;
+                      if(ch == '%')         /*Check for '%' as there will be format specifier after it */
+                      {
+                          ptr++;
+                          ch = *ptr;
+                          if((ch>=0x30) && (ch<=0x39))
+                          {
+                              v_numOfDigitsToDisp_u8 = 0;
+                              while((ch>=0x30) && (ch<=0x39))
+                              {
+                                  v_numOfDigitsToDisp_u8 = (v_numOfDigitsToDisp_u8 * 10) + (ch-0x30);
+                                  ptr++;
+                                  ch = *ptr;
+                              }
+                          }
+                          else
+                          {
+                              v_numOfDigitsToDisp_u8 = C_MaxDigitsToDisplayUsingPrintf_U8;
+                          }
+              
+              
+                          switch(ch)       /* Decode the type of the argument */
+                          {
+                          case 'C':
+                          case 'c':     /* Argument type is of char, hence read char data from the argp */
+                              ch = va_arg(argp, int);
+                              OLED_DisplayChar(ch);
+                              break;
+              
+                          case 'd':    /* Argument type is of signed integer, hence read 16bit data from the argp */
+                              v_num_s16 = va_arg(argp, int);
+                              if(v_num_s16<0)
+                              { /* If the number is -ve then display the 2's complement along with '-' sign */
+                                  v_num_s16 = -v_num_s16;
+                                  OLED_DisplayChar('-');
+                              }
+                              OLED_DisplayNumber(C_DECIMAL_U8,v_num_s16,v_numOfDigitsToDisp_u8);
+                              break;
+              
+                          case 'D':    /* Argument type is of integer, hence read 16bit data from the argp */
+                              v_num_s32 = va_arg(argp, sint32_t);
+                              if(v_num_s32<0)
+                              { /* If the number is -ve then display the 2's complement along with '-' sign */
+                                  v_num_s32 = -v_num_s32;
+                                  OLED_DisplayChar('-');
+                              }
+C51 COMPILER V9.02   OLED_I2C                                                              08/10/2016 13:31:34 PAGE 11  
+
+                              OLED_DisplayNumber(C_DECIMAL_U8,v_num_s32,v_numOfDigitsToDisp_u8);
+                              break;
+              
+                          case 'u':    /* Argument type is of unsigned integer, hence read 16bit unsigned data */
+                              v_num_u16 = va_arg(argp, int);
+                              OLED_DisplayNumber(C_DECIMAL_U8,v_num_u16,v_numOfDigitsToDisp_u8);
+                              break;
+              
+                          case 'U':    /* Argument type is of integer, hence read 32bit unsigend data */
+                              v_num_u32 = va_arg(argp, uint32_t);
+                              OLED_DisplayNumber(C_DECIMAL_U8,v_num_u32,v_numOfDigitsToDisp_u8);
+                              break;
+              
+                          case 'x':  /* Argument type is of hex, hence hexadecimal data from the argp */
+                              v_num_u16 = va_arg(argp, int);
+                              OLED_DisplayNumber(C_HEX_U8,v_num_u16,v_numOfDigitsToDisp_u8);
+                              break;
+              
+                          case 'X':  /* Argument type is of hex, hence hexadecimal data from the argp */
+                              v_num_u32 = va_arg(argp, uint32_t);
+                              OLED_DisplayNumber(C_HEX_U8,v_num_u32,v_numOfDigitsToDisp_u8);
+                              break;
+              
+              
+                          case 'b':  /* Argument type is of binary,Read int and convert to binary */
+                              v_num_u16 = va_arg(argp, int);
+                              if(v_numOfDigitsToDisp_u8 == C_MaxDigitsToDisplayUsingPrintf_U8)
+                                  v_numOfDigitsToDisp_u8 = 16;
+                              OLED_DisplayNumber(C_BINARY_U8,v_num_u16,v_numOfDigitsToDisp_u8);
+                              break;
+              
+                          case 'B':  /* Argument type is of binary,Read int and convert to binary */
+                              v_num_u32 = va_arg(argp, uint32_t);
+                              if(v_numOfDigitsToDisp_u8 == C_MaxDigitsToDisplayUsingPrintf_U8)
+                                  v_numOfDigitsToDisp_u8 = 16;
+                              OLED_DisplayNumber(C_BINARY_U8,v_num_u32,v_numOfDigitsToDisp_u8);
+                              break;
+              
+              
+                          case 'F':
+                          case 'f': /* Argument type is of float, hence read double data from the argp */
+              #if (Enable_OLED_DisplayFloatNumber == 1)
+                              v_floatNum_f32 = va_arg(argp, double);
+                              OLED_DisplayFloatNumber(v_floatNum_f32);
+              #endif
+                              break;
+              
+              
+                          case 'S':
+                          case 's': /* Argument type is of string, hence get the pointer to sting passed */
+                              str = va_arg(argp, char *);
+                              OLED_DisplayString(str);
+                              break;
+              
+                          case '%':
+                              OLED_DisplayChar('%');
+                              break;
+                          }
+                      }
+                      else
+                      {
+                          /* As '%' is not detected display/transmit the char passed */
+C51 COMPILER V9.02   OLED_I2C                                                              08/10/2016 13:31:34 PAGE 12  
+
+                          OLED_DisplayChar(ch);
+                      }
+                  }
+              
+                  va_end(argp);
+              }
+              #endif
+ 672          
+ 673          
+ 674          
+ 675          
+ 676          
+ 677          
+ 678          /***************************************************************************************************
+ 679                                   void OLED_Clear()
+ 680           ****************************************************************************************************
+ 681           * I/P Arguments: none.
+ 682           * Return value    : none
+ 683          
+ 684           * description  :This function clears the LCD and moves the cursor to beginning of first line
+ 685           ****************************************************************************************************/
+ 686          void OLED_Clear()
+ 687          {
+ 688   1          int i;
+ 689   1      
+ 690   1          oledSendCommand(SSD1306_SET_COLUMN_ADDR);
+ 691   1          oledSendCommand(0);
+ 692   1          oledSendCommand(127);
+ 693   1      
+ 694   1          oledSendCommand(SSD1306_SET_PAGE_ADDR);
+ 695   1          oledSendCommand(0);
+ 696   1          oledSendCommand(7);
+ 697   1      
+ 698   1      
+ 699   1          oledSendStart(SSD1306_ADDRESS<<1);
+ 700   1          oledSendByte(SSD1306_DATA_CONTINUE);
+ 701   1      
+ 702   1          for (i=0; i<1024; i++)      // Write Zeros to clear the display
+ 703   1          {
+ 704   2              oledSendByte(0);
+ 705   2          }
+ 706   1      
+ 707   1          oledSendCommand(SSD1306_SET_COLUMN_ADDR);
+ 708   1          oledSendCommand(0);
+ 709   1          oledSendCommand(127);
+ 710   1      
+ 711   1          oledSendCommand(SSD1306_SET_PAGE_ADDR);
+ 712   1          oledSendCommand(0);
+ 713   1          oledSendCommand(7);   
+ 714   1      
+ 715   1          oledSendStart(SSD1306_ADDRESS<<1);
+ 716   1          oledSendByte(SSD1306_DATA_CONTINUE);
+ 717   1      }
+ 718          
+ 719          
+ 720          
+ 721          
+ 722          
+ 723          /***************************************************************************************************
+ 724                                   void OLED_GoToLine(uint8_t v_lineNumber_u8)
+ 725           ****************************************************************************************************
+ 726           * I/P Arguments: uint8_t: Line number(0-7).
+C51 COMPILER V9.02   OLED_I2C                                                              08/10/2016 13:31:34 PAGE 13  
+
+ 727           * Return value    : none
+ 728          
+ 729           * description  :This function moves the Cursor to beginning of the specified line.
+ 730                  If the requested line number is out of range, it will not move the cursor.
+ 731          
+ 732           Note: The line numbers run from 0 to 7
+ 733           ****************************************************************************************************/
+ 734          #if (Enable_OLED_GoToLine == 1)
+              void  OLED_GoToLine(uint8_t lineNumber)
+              {
+                  if(lineNumber<8)
+                  {   /* If the line number is within range
+                       then move it to specified line and keep track*/
+                      OledLineNum = lineNumber;
+                      OLED_SetCursor(OledLineNum,0);
+                  }
+              }
+              #endif
+ 745          
+ 746          
+ 747          
+ 748          
+ 749          
+ 750          
+ 751          /***************************************************************************************************
+ 752                                   void  OLED_GoToNextLine()
+ 753           ****************************************************************************************************
+ 754           * I/P Arguments: none
+ 755           * Return value    : none
+ 756          
+ 757           * description  :This function moves the Cursor to beginning of the next line.
+ 758                  If the cursor is on last line and NextLine command is issued then
+ 759                  it will move the cursor to first line.
+ 760           ****************************************************************************************************/
+ 761          void  OLED_GoToNextLine()
+ 762          {
+ 763   1          /*Increment the current line number.
+ 764   1            In case it exceeds the limit, rool it back to first line */
+ 765   1          OledLineNum++;
+ 766   1          OledLineNum = OledLineNum&0x07;
+ 767   1          OLED_SetCursor(OledLineNum,0); /* Finally move it to next line */
+ 768   1      }
+ 769          
+ 770          
+ 771          
+ 772          
+ 773          
+ 774          
+ 775          
+ 776          /***************************************************************************************************
+ 777                          void OLED_SetCursor(char v_lineNumber_u8,char v_charNumber_u8)
+ 778           ****************************************************************************************************
+ 779           * I/P Arguments: char row,char col
+ 780                           row -> line number(line1=1, line2=2),
+ 781                                  For 2line LCD the I/P argument should be either 1 or 2.
+ 782                           col -> char number.
+ 783                                  For 16-char LCD the I/P argument should be between 0-15.
+ 784           * Return value    : none
+ 785          
+ 786           * description  :This function moves the Cursor to specified position
+ 787          
+ 788                             Note:If the Input(Line/Char number) are out of range
+C51 COMPILER V9.02   OLED_I2C                                                              08/10/2016 13:31:34 PAGE 14  
+
+ 789                                  then no action will be taken
+ 790           ****************************************************************************************************/
+ 791          void OLED_SetCursor(uint8_t lineNumber,uint8_t cursorPosition)
+ 792          {
+ 793   1          /* Move the Cursor to specified position only if it is in range */
+ 794   1          if((lineNumber <= C_OledLastLine_U8) && (cursorPosition <= 127))
+ 795   1          {
+ 796   2              OledLineNum=lineNumber;   /* Save the specified line number */
+ 797   2              OledCursorPos=cursorPosition; /* Save the specified cursor position */
+ 798   2      
+ 799   2              oledSendCommand(SSD1306_SET_COLUMN_ADDR);
+ 800   2              oledSendCommand(cursorPosition);
+ 801   2              oledSendCommand(127);
+ 802   2      
+ 803   2              oledSendCommand(SSD1306_SET_PAGE_ADDR);
+ 804   2              oledSendCommand(lineNumber);
+ 805   2              oledSendCommand(7);
+ 806   2      
+ 807   2              oledSendStart(SSD1306_ADDRESS<<1);
+ 808   2              oledSendByte(SSD1306_DATA_CONTINUE);
+ 809   2          }
+ 810   1      }
+ 811          
+ 812          
+ 813          
+ 814          
+ 815          /***************************************************************************************************
+ 816                                 void OLED_DisplayLogo(char *ptr_Logo)
+ 817           ****************************************************************************************************
+ 818           * I/P Arguments   : Array Bit Map(Address of Bit Map) to be displayed.
+ 819           * Return value    : none
+ 820          
+ 821           * description  :
+ 822                         This function is used to display the logo for using the bit map.
+ 823                         User should pass the array/address of bitmap for diplay the logo.
+ 824                         User can enable/disable the inversion of the dislpay by using the below functions.
+ 825                         OLED_EnableInversion/OLED_DisableInversion
+ 826           ****************************************************************************************************/
+ 827          #if (Enable_OLED_DisplayLogo == 1)
+ 828          void OLED_DisplayLogo(char *ptr_Logo)
+ 829          {
+ 830   1          int i;
+ 831   1      
+ 832   1          OLED_SetCursor(0,0);
+ 833   1      
+ 834   1          oledSendStart(SSD1306_ADDRESS<<1);
+ 835   1          oledSendByte(SSD1306_DATA_CONTINUE);
+ 836   1      
+ 837   1          for ( i=0; i<1024; i++)      // Send data
+ 838   1          {
+ 839   2              oledSendByte(ptr_Logo[i]);
+ 840   2          }
+ 841   1      }
+ 842          #endif
+ 843          
+ 844          
+ 845          
+ 846          
+ 847          
+ 848          /***************************************************************************************************
+ 849          void OLED_VerticalGraph(uint8_t barGraphNumber, uint8_t percentageValue)
+ 850           ****************************************************************************************************
+C51 COMPILER V9.02   OLED_I2C                                                              08/10/2016 13:31:34 PAGE 15  
+
+ 851           * I/P Arguments   : barGraphNumber : position of bar ( 0 to 3 )
+ 852                               percentageValue : value of the bar in percentage(0-100)
+ 853           * Return value    : none
+ 854          
+ 855           * description  :
+ 856                          This function displays bar graph in horizontal direction.
+ 857           ****************************************************************************************************/
+ 858          #if (ENABLE_OLED_VerticalGraph ==1)
+              void OLED_VerticalGraph(uint8_t barGraphNumber, uint8_t percentageValue)
+              {
+                  uint8_t lineNumberToStartDisplay,i,j,barGraphPosition;
+                  uint8_t lineNumber,valueToDisplay;
+              
+              
+                  if((barGraphNumber < C_MaxBarGraphs_U8) && (percentageValue<=100))
+                  {
+                      barGraphPosition = barGraphNumber * 32;
+              
+                      OLED_SetCursor(0,barGraphPosition+8);
+                      OLED_DisplayNumber(E_DECIMAL,percentageValue,3);
+              
+              
+                      /* Divide the value by 8, as we have 8-pixels for each line */
+                      percentageValue = percentageValue/2;
+                      lineNumberToStartDisplay = (percentageValue>>3);
+                      lineNumber = 7-lineNumberToStartDisplay;
+              
+              
+                      for(i=1;i<8;i++)
+                      {
+                          OLED_SetCursor(i,(barGraphPosition+12));
+                          if(i<lineNumber)
+                          {
+                              valueToDisplay = 0x00;
+                          }
+                          else if(i== lineNumber)
+                          {
+                              valueToDisplay = util_GetMod8(percentageValue,8);
+                              valueToDisplay = (0xff<<(8-valueToDisplay));
+                          }
+                          else
+                          {
+                              valueToDisplay = 0xff;
+                          }
+              
+                          for(j=0;j<12;j++)
+                          {
+                              oledSendByte(valueToDisplay);
+                          }
+                      }
+                  }
+              }
+              #endif
+ 904          
+ 905          
+ 906          
+ 907          
+ 908          /***************************************************************************************************
+ 909              void OLED_DisplayHorizontalGraph(uint8_t barGraphNumber, uint8_t percentageValue)
+ 910           ****************************************************************************************************
+ 911           * I/P Arguments   : barGraphNumber : position of bar ( 0 to 3 )
+ 912                               percentageValue : value of the bar in percentage(0-100)
+C51 COMPILER V9.02   OLED_I2C                                                              08/10/2016 13:31:34 PAGE 16  
+
+ 913           * Return value    : none
+ 914          
+ 915           * description  :
+ 916                          This function displays bar graph in vertical direction.
+ 917           ****************************************************************************************************/
+ 918          #if (ENABLE_OLED_HorizontalGraph ==1)
+              void OLED_HorizontalGraph(uint8_t barGraphNumber, uint8_t percentageValue)
+              {
+                  uint8_t lineNumberToStartDisplay,i;
+                  lineNumberToStartDisplay = (barGraphNumber * 2)+1;
+              
+                  if((barGraphNumber < C_MaxBarGraphs_U8) && (percentageValue<=100))
+                  {
+                      OLED_SetCursor(lineNumberToStartDisplay,0);
+              
+                      for(i=0;i<percentageValue;i++)
+                      {
+                          oledSendByte(0xff);
+                      }
+              
+                      for(i=percentageValue;i<100;i++)
+                      {
+                          oledSendByte(0x00);
+                      }
+              
+                      OLED_SetCursor(lineNumberToStartDisplay,105);
+              
+                      OLED_DisplayNumber(E_DECIMAL,percentageValue,3);
+                  }
+              }
+              #endif
+ 944          
+ 945          
+ 946          
+ 947          
+ 948          /***************************************************************************************************
+ 949                                 void OLED_EnableInversion(void)
+ 950           ****************************************************************************************************
+ 951           * I/P Arguments   : none.
+ 952           * Return value    : none
+ 953          
+ 954           * description  :
+ 955                         This function is used to Enable the display inversion.
+ 956                         Once this is enabled the background pixels will be turned ON and char pixels will be OFF.
+ 957          
+ 958           ****************************************************************************************************/
+ 959          #if (Enable_OLED_EnableInversion == 1)
+              void OLED_EnableInversion(void)
+              {
+                  oledSendCommand(SSD1306_INVERT_DISPLAY);
+              }
+              #endif
+ 965          
+ 966          
+ 967          
+ 968          
+ 969          
+ 970          
+ 971          
+ 972          /***************************************************************************************************
+ 973                                 void OLED_DisableInversion(void)
+ 974           ****************************************************************************************************
+C51 COMPILER V9.02   OLED_I2C                                                              08/10/2016 13:31:34 PAGE 17  
+
+ 975           * I/P Arguments   : none.
+ 976           * Return value    : none
+ 977          
+ 978           * description  :
+ 979                         This function is used to clear the display inversion.
+ 980          
+ 981           ****************************************************************************************************/
+ 982          #if (Enable_OLED_DisableInversion == 1)
+              void OLED_DisableInversion(void)
+              {
+                  oledSendCommand(SSD1306_NORMAL_DISPLAY);
+              }
+              #endif
+ 988          
+ 989          
+ 990          
+ 991          
+ 992          
+ 993          
+ 994          /***************************************************************************************************
+ 995                                 void OLED_SetBrightness(uint8_t brightnessValue)
+ 996           ****************************************************************************************************
+ 997           * I/P Arguments   : uint8_t: brightness level from 0-255.
+ 998           * Return value    : none
+ 999          
+1000           * description  :
+1001                         This function is used to adjust the contrast/Brightness of the OLED.
+1002          
+1003           ****************************************************************************************************/
+1004          #if (Enable_OLED_SetBrightness == 1)
+              void OLED_SetBrightness(uint8_t brightnessValue)
+              {
+                  oledSendCommand(SSD1306_SET_CONTRAST_CONTROL);
+                  oledSendCommand(brightnessValue);
+              }
+              #endif
+1011          
+1012          
+1013          
+1014          
+1015          
+1016          
+1017          /********************************************************************************
+1018                          Local FUnctions for sending the command/data
+1019           ********************************************************************************/
+1020          
+1021          void oledSendStart(uint8_t address)
+1022          {
+1023   1          SDA_PIN = LOW;
+1024   1          SDA_PIN = HIGH;
+1025   1          SCL_PIN = HIGH;
+1026   1          SDA_PIN = LOW;
+1027   1          SCL_PIN = LOW;
+1028   1          oledSendByte(address);
+1029   1      }
+1030          
+1031          
+1032          void oledSendStop()
+1033          {
+1034   1          SDA_PIN = LOW;
+1035   1          SCL_PIN = HIGH;
+1036   1          SDA_PIN = LOW;      
+C51 COMPILER V9.02   OLED_I2C                                                              08/10/2016 13:31:34 PAGE 18  
+
+1037   1          SDA_PIN = HIGH;
+1038   1      }
+1039          
+1040          
+1041          void oledWaitForAck()
+1042          {
+1043   1          SDA_PIN = HIGH; //Configure SDA_PIN as Input to read the ACK                //delay_us(1);
+1044   1          SCL_PIN = HIGH;
+1045   1          while(SDA_PIN==HIGH);
+1046   1          SCL_PIN = LOW;
+1047   1      }
+1048          
+1049          
+1050          void oledSendByte(uint8_t ch)
+1051          {
+1052   1          char i;              
+1053   1      
+1054   1          SCL_PIN = LOW;
+1055   1          for ( i = 7; i>=0; i--)
+1056   1          {
+1057   2              SDA_PIN = (ch >> (i)) & 0x1; 
+1058   2              SCL_PIN = HIGH; 
+1059   2              SCL_PIN = LOW;  
+1060   2          }
+1061   1      
+1062   1          oledWaitForAck();
+1063   1      }
+1064          
+1065          
+1066          void oledSendCommand(uint8_t cmd)
+1067          {
+1068   1          oledSendStart(SSD1306_ADDRESS<<1);
+1069   1          oledSendByte(SSD1306_COMMAND);
+1070   1          oledSendByte(cmd);
+1071   1          oledSendStop();
+1072   1      }
+1073          
+1074          /*****************************************************************************************************/
+1075          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    555    ----
+   CONSTANT SIZE    =    950    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      2      13
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

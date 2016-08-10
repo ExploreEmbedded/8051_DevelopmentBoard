@@ -1,0 +1,354 @@
+BL51 BANKED LINKER/LOCATER V6.22                                                        08/10/2016  11:20:35  PAGE 1
+
+
+BL51 BANKED LINKER/LOCATER V6.22, INVOKED BY:
+C:\KEIL_V5\C51\BIN\BL51.EXE .\oled_i2c.obj, main.obj TO 13a-OledDisplayStrings RAMSIZE (256)
+
+
+MEMORY MODEL: SMALL
+
+
+INPUT MODULES INCLUDED:
+  .\oled_i2c.obj (OLED_I2C)
+  main.obj (MAIN)
+  C:\KEIL_V5\C51\LIB\C51S.LIB (?C_STARTUP)
+  C:\KEIL_V5\C51\LIB\C51S.LIB (?C?CLDPTR)
+  C:\KEIL_V5\C51\LIB\C51S.LIB (?C?OFFXADD)
+
+
+LINK MAP OF MODULE:  13a-OledDisplayStrings (OLED_I2C)
+
+
+            TYPE    BASE      LENGTH    RELOCATION   SEGMENT NAME
+            -----------------------------------------------------
+
+            * * * * * * *   D A T A   M E M O R Y   * * * * * * *
+            REG     0000H     0008H     ABSOLUTE     "REG BANK 0"
+            DATA    0008H     0009H     UNIT         _DATA_GROUP_
+            DATA    0011H     0002H     UNIT         ?DT?OLED_I2C
+            IDATA   0013H     0001H     UNIT         ?STACK
+
+            * * * * * * *   C O D E   M E M O R Y   * * * * * * *
+            CODE    0000H     0003H     ABSOLUTE     
+            CODE    0003H     03B6H     UNIT         ?CO?OLED_I2C
+            CODE    03B9H     0080H     UNIT         ?PR?OLED_INIT?OLED_I2C
+            CODE    0439H     006BH     UNIT         ?PR?OLED_CLEAR?OLED_I2C
+            CODE    04A4H     005FH     UNIT         ?PR?_OLED_DISPLAYCHAR?OLED_I2C
+            CODE    0503H     0040H     UNIT         ?PR?_OLED_SETCURSOR?OLED_I2C
+            CODE    0543H     0035H     UNIT         ?PR?MAIN?MAIN
+            CODE    0578H     002EH     UNIT         ?CO?MAIN
+            CODE    05A6H     0025H     UNIT         ?PR?_OLED_DISPLAYSTRING?OLED_I2C
+            CODE    05CBH     0025H     UNIT         ?C?LIB_CODE
+            CODE    05F0H     0021H     UNIT         ?PR?_OLEDSENDBYTE?OLED_I2C
+            CODE    0611H     0014H     UNIT         ?PR?_OLEDSENDCOMMAND?OLED_I2C
+            CODE    0625H     000DH     UNIT         ?PR?_OLEDSENDSTART?OLED_I2C
+            CODE    0632H     000CH     UNIT         ?PR?OLED_GOTONEXTLINE?OLED_I2C
+            CODE    063EH     000CH     UNIT         ?C_C51STARTUP
+            CODE    064AH     000AH     UNIT         ?PR?OLEDWAITFORACK?OLED_I2C
+            CODE    0654H     0009H     UNIT         ?PR?OLEDSENDSTOP?OLED_I2C
+
+
+
+OVERLAY MAP OF MODULE:   13a-OledDisplayStrings (OLED_I2C)
+
+
+SEGMENT                                    DATA_GROUP 
+  +--> CALLED SEGMENT                    START    LENGTH
+--------------------------------------------------------
+?C_C51STARTUP                            -----    -----
+  +--> ?PR?MAIN?MAIN
+
+?PR?MAIN?MAIN                            -----    -----
+BL51 BANKED LINKER/LOCATER V6.22                                                      08/10/2016  11:20:35  PAGE 2
+
+
+  +--> ?PR?OLED_INIT?OLED_I2C
+  +--> ?PR?_OLED_SETCURSOR?OLED_I2C
+  +--> ?CO?MAIN
+  +--> ?PR?_OLED_DISPLAYSTRING?OLED_I2C
+
+?PR?OLED_INIT?OLED_I2C                   -----    -----
+  +--> ?PR?_OLEDSENDCOMMAND?OLED_I2C
+  +--> ?PR?OLED_CLEAR?OLED_I2C
+
+?PR?_OLEDSENDCOMMAND?OLED_I2C            0010H    0001H
+  +--> ?PR?_OLEDSENDSTART?OLED_I2C
+  +--> ?PR?_OLEDSENDBYTE?OLED_I2C
+  +--> ?PR?OLEDSENDSTOP?OLED_I2C
+
+?PR?_OLEDSENDSTART?OLED_I2C              -----    -----
+  +--> ?PR?_OLEDSENDBYTE?OLED_I2C
+
+?PR?_OLEDSENDBYTE?OLED_I2C               -----    -----
+  +--> ?PR?OLEDWAITFORACK?OLED_I2C
+
+?PR?OLED_CLEAR?OLED_I2C                  0008H    0002H
+  +--> ?PR?_OLEDSENDCOMMAND?OLED_I2C
+  +--> ?PR?_OLEDSENDSTART?OLED_I2C
+  +--> ?PR?_OLEDSENDBYTE?OLED_I2C
+
+?PR?_OLED_SETCURSOR?OLED_I2C             000EH    0002H
+  +--> ?PR?_OLEDSENDCOMMAND?OLED_I2C
+  +--> ?PR?_OLEDSENDSTART?OLED_I2C
+  +--> ?PR?_OLEDSENDBYTE?OLED_I2C
+
+?PR?_OLED_DISPLAYSTRING?OLED_I2C         0008H    0003H
+  +--> ?PR?_OLED_DISPLAYCHAR?OLED_I2C
+
+?PR?_OLED_DISPLAYCHAR?OLED_I2C           000BH    0003H
+  +--> ?PR?OLED_GOTONEXTLINE?OLED_I2C
+  +--> ?CO?OLED_I2C
+  +--> ?PR?_OLEDSENDBYTE?OLED_I2C
+
+?PR?OLED_GOTONEXTLINE?OLED_I2C           -----    -----
+  +--> ?PR?_OLED_SETCURSOR?OLED_I2C
+
+
+
+SYMBOL TABLE OF MODULE:  13a-OledDisplayStrings (OLED_I2C)
+
+  VALUE           TYPE          NAME
+  ----------------------------------
+
+  -------         MODULE        OLED_I2C
+  C:0000H         SYMBOL        _ICE_DUMMY_
+  D:0080H         PUBLIC        P0
+  C:0003H         PUBLIC        OledFontTable
+  D:00A8H         PUBLIC        IE
+  C:03B9H         PUBLIC        OLED_Init
+  B:0080H.1       PUBLIC        SDA_PIN
+  B:0080H.0       PUBLIC        SCL_PIN
+  C:0632H         PUBLIC        OLED_GoToNextLine
+BL51 BANKED LINKER/LOCATER V6.22                                                      08/10/2016  11:20:35  PAGE 3
+
+
+  C:0503H         PUBLIC        _OLED_SetCursor
+  D:0011H         PUBLIC        OledCursorPos
+  D:0012H         PUBLIC        OledLineNum
+  C:0625H         PUBLIC        _oledSendStart
+  C:05F0H         PUBLIC        _oledSendByte
+  C:0654H         PUBLIC        oledSendStop
+  C:05A6H         PUBLIC        _OLED_DisplayString
+  C:04A4H         PUBLIC        _OLED_DisplayChar
+  D:00C8H         PUBLIC        T2CON
+  C:0439H         PUBLIC        OLED_Clear
+  C:0611H         PUBLIC        _oledSendCommand
+  C:064AH         PUBLIC        oledWaitForAck
+  -------         PROC          OLED_INIT
+  C:03B9H         LINE#         197
+  C:03B9H         LINE#         198
+  C:03B9H         LINE#         199
+  C:03BEH         LINE#         200
+  C:03C3H         LINE#         201
+  C:03C8H         LINE#         202
+  C:03CDH         LINE#         203
+  C:03D2H         LINE#         204
+  C:03D7H         LINE#         205
+  C:03DCH         LINE#         206
+  C:03E1H         LINE#         207
+  C:03E6H         LINE#         208
+  C:03EBH         LINE#         209
+  C:03F0H         LINE#         210
+  C:03F5H         LINE#         211
+  C:03FAH         LINE#         212
+  C:03FFH         LINE#         213
+  C:0404H         LINE#         214
+  C:0409H         LINE#         215
+  C:040EH         LINE#         216
+  C:0413H         LINE#         217
+  C:0418H         LINE#         218
+  C:041DH         LINE#         219
+  C:0422H         LINE#         220
+  C:0427H         LINE#         221
+  C:042CH         LINE#         222
+  C:0431H         LINE#         223
+  C:0436H         LINE#         225
+  -------         ENDPROC       OLED_INIT
+  -------         PROC          _OLED_DISPLAYCHAR
+  D:000BH         SYMBOL        ch
+  -------         DO            
+  D:000CH         SYMBOL        dat
+  D:000DH         SYMBOL        i
+  -------         ENDDO         
+  C:04A4H         LINE#         242
+  C:04A6H         LINE#         243
+  C:04A6H         LINE#         244
+  C:04A9H         LINE#         246
+  C:04C1H         LINE#         247
+  C:04C1H         LINE#         250
+  C:04C4H         LINE#         251
+  C:04C4H         LINE#         252
+  C:04CAH         LINE#         253
+BL51 BANKED LINKER/LOCATER V6.22                                                      08/10/2016  11:20:35  PAGE 4
+
+
+  C:04CAH         LINE#         254
+  C:04D0H         LINE#         256
+  C:04D0H         LINE#         257
+  C:04D0H         LINE#         258
+  C:04EEH         LINE#         261
+  C:04F2H         LINE#         262
+  C:04F4H         LINE#         264
+  C:04F6H         LINE#         266
+  C:04FBH         LINE#         267
+  C:04FBH         LINE#         268
+  C:0500H         LINE#         269
+  C:0502H         LINE#         270
+  C:0502H         LINE#         271
+  C:0502H         LINE#         272
+  C:0502H         LINE#         273
+  C:0502H         LINE#         274
+  -------         ENDPROC       _OLED_DISPLAYCHAR
+  -------         PROC          _OLED_DISPLAYSTRING
+  D:0008H         SYMBOL        ptr
+  C:05A6H         LINE#         293
+  C:05ACH         LINE#         294
+  C:05ACH         LINE#         295
+  C:05B7H         LINE#         296
+  C:05CAH         LINE#         297
+  -------         ENDPROC       _OLED_DISPLAYSTRING
+  -------         PROC          OLED_CLEAR
+  -------         DO            
+  D:0008H         SYMBOL        i
+  -------         ENDDO         
+  C:0439H         LINE#         684
+  C:0439H         LINE#         685
+  C:0439H         LINE#         688
+  C:043EH         LINE#         689
+  C:0443H         LINE#         690
+  C:0448H         LINE#         692
+  C:044DH         LINE#         693
+  C:0452H         LINE#         694
+  C:0457H         LINE#         697
+  C:045CH         LINE#         698
+  C:0461H         LINE#         700
+  C:0466H         LINE#         701
+  C:0466H         LINE#         702
+  C:046BH         LINE#         703
+  C:047CH         LINE#         705
+  C:0481H         LINE#         706
+  C:0486H         LINE#         707
+  C:048BH         LINE#         709
+  C:0490H         LINE#         710
+  C:0495H         LINE#         711
+  C:049AH         LINE#         713
+  C:049FH         LINE#         714
+  -------         ENDPROC       OLED_CLEAR
+  -------         PROC          OLED_GOTONEXTLINE
+  C:0632H         LINE#         759
+  C:0632H         LINE#         760
+  C:0632H         LINE#         763
+  C:0634H         LINE#         764
+BL51 BANKED LINKER/LOCATER V6.22                                                      08/10/2016  11:20:35  PAGE 5
+
+
+  C:0637H         LINE#         765
+  -------         ENDPROC       OLED_GOTONEXTLINE
+  -------         PROC          _OLED_SETCURSOR
+  D:000EH         SYMBOL        lineNumber
+  D:000FH         SYMBOL        cursorPosition
+  C:0503H         LINE#         789
+  C:0507H         LINE#         790
+  C:0507H         LINE#         792
+  C:0514H         LINE#         793
+  C:0514H         LINE#         794
+  C:0517H         LINE#         795
+  C:051AH         LINE#         797
+  C:051FH         LINE#         798
+  C:0524H         LINE#         799
+  C:0529H         LINE#         801
+  C:052EH         LINE#         802
+  C:0533H         LINE#         803
+  C:0538H         LINE#         805
+  C:053DH         LINE#         806
+  C:0542H         LINE#         807
+  C:0542H         LINE#         808
+  -------         ENDPROC       _OLED_SETCURSOR
+  -------         PROC          _OLEDSENDSTART
+  D:0007H         SYMBOL        address
+  C:0625H         LINE#         1019
+  C:0625H         LINE#         1020
+  C:0625H         LINE#         1021
+  C:0627H         LINE#         1022
+  C:0629H         LINE#         1023
+  C:062BH         LINE#         1024
+  C:062DH         LINE#         1025
+  C:062FH         LINE#         1026
+  -------         ENDPROC       _OLEDSENDSTART
+  -------         PROC          OLEDSENDSTOP
+  C:0654H         LINE#         1030
+  C:0654H         LINE#         1031
+  C:0654H         LINE#         1032
+  C:0656H         LINE#         1033
+  C:0658H         LINE#         1034
+  C:065AH         LINE#         1035
+  C:065CH         LINE#         1036
+  -------         ENDPROC       OLEDSENDSTOP
+  -------         PROC          OLEDWAITFORACK
+  C:064AH         LINE#         1039
+  C:064AH         LINE#         1040
+  C:064AH         LINE#         1041
+  C:064CH         LINE#         1042
+  C:064EH         LINE#         1043
+  C:0651H         LINE#         1044
+  C:0653H         LINE#         1045
+  -------         ENDPROC       OLEDWAITFORACK
+  -------         PROC          _OLEDSENDBYTE
+  D:0007H         SYMBOL        ch
+  -------         DO            
+  D:0006H         SYMBOL        i
+  -------         ENDDO         
+  C:05F0H         LINE#         1048
+BL51 BANKED LINKER/LOCATER V6.22                                                      08/10/2016  11:20:35  PAGE 6
+
+
+  C:05F0H         LINE#         1049
+  C:05F0H         LINE#         1052
+  C:05F2H         LINE#         1053
+  C:05F4H         LINE#         1054
+  C:05F4H         LINE#         1055
+  C:0601H         LINE#         1056
+  C:0603H         LINE#         1057
+  C:0605H         LINE#         1058
+  C:060EH         LINE#         1060
+  -------         ENDPROC       _OLEDSENDBYTE
+  -------         PROC          _OLEDSENDCOMMAND
+  D:0010H         SYMBOL        cmd
+  C:0611H         LINE#         1064
+  C:0613H         LINE#         1065
+  C:0613H         LINE#         1066
+  C:0618H         LINE#         1067
+  C:061DH         LINE#         1068
+  C:0622H         LINE#         1069
+  -------         ENDPROC       _OLEDSENDCOMMAND
+  -------         ENDMOD        OLED_I2C
+
+  -------         MODULE        MAIN
+  C:0000H         SYMBOL        _ICE_DUMMY_
+  D:00A8H         PUBLIC        IE
+  C:0543H         PUBLIC        main
+  D:00C8H         PUBLIC        T2CON
+  -------         PROC          MAIN
+  C:0543H         LINE#         28
+  C:0543H         LINE#         29
+  C:0543H         LINE#         30
+  C:0546H         LINE#         31
+  C:054DH         LINE#         32
+  C:0556H         LINE#         34
+  C:055DH         LINE#         35
+  C:0566H         LINE#         37
+  C:056DH         LINE#         38
+  C:0576H         LINE#         40
+  -------         ENDPROC       MAIN
+  -------         ENDMOD        MAIN
+
+  -------         MODULE        ?C?CLDPTR
+  C:05CBH         PUBLIC        ?C?CLDPTR
+  -------         ENDMOD        ?C?CLDPTR
+
+  -------         MODULE        ?C?OFFXADD
+  C:05E4H         PUBLIC        ?C?OFFXADD
+  -------         ENDMOD        ?C?OFFXADD
+
+Program Size: data=20.0 xdata=0 code=1629
+LINK/LOCATE RUN COMPLETE.  0 WARNING(S),  0 ERROR(S)

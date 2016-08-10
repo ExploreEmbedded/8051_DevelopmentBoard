@@ -1,0 +1,4 @@
+".\oled_i2c.obj",
+"main.obj" 
+TO "13b-OledDisplayLogos" 
+RAMSIZE(256) 
