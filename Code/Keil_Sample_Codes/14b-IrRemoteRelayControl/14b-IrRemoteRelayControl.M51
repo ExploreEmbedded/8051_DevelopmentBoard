@@ -1,0 +1,197 @@
+BL51 BANKED LINKER/LOCATER V6.22                                                        08/11/2016  11:32:28  PAGE 1
+
+
+BL51 BANKED LINKER/LOCATER V6.22, INVOKED BY:
+C:\KEIL_V5\C51\BIN\BL51.EXE .\nec_ir.obj, main.obj TO 14b-IrRemoteRelayControl RAMSIZE (256)
+
+
+MEMORY MODEL: SMALL
+
+
+INPUT MODULES INCLUDED:
+  .\nec_ir.obj (NEC_IR)
+  main.obj (MAIN)
+  C:\KEIL_V5\C51\LIB\C51S.LIB (?C_STARTUP)
+  C:\KEIL_V5\C51\LIB\C51S.LIB (?C?LSHL)
+  C:\KEIL_V5\C51\LIB\C51S.LIB (?C?LCASE)
+  C:\KEIL_V5\C51\LIB\C51S.LIB (?C_INIT)
+
+
+LINK MAP OF MODULE:  14b-IrRemoteRelayControl (NEC_IR)
+
+
+            TYPE    BASE      LENGTH    RELOCATION   SEGMENT NAME
+            -----------------------------------------------------
+
+            * * * * * * *   D A T A   M E M O R Y   * * * * * * *
+            REG     0000H     0008H     ABSOLUTE     "REG BANK 0"
+            DATA    0008H     000BH     UNIT         ?DT?NEC_IR
+            DATA    0013H     0008H     UNIT         _DATA_GROUP_
+            IDATA   001BH     0001H     UNIT         ?STACK
+
+            * * * * * * *   C O D E   M E M O R Y   * * * * * * *
+            CODE    0000H     0003H     ABSOLUTE     
+            CODE    0003H     0003H     ABSOLUTE     
+                    0006H     0005H                  *** GAP ***
+            CODE    000BH     0003H     ABSOLUTE     
+            CODE    000EH     009FH     UNIT         ?PR?EXTERNALINTR0_ISR?NEC_IR
+            CODE    00ADH     008CH     UNIT         ?C_C51STARTUP
+            CODE    0139H     004DH     UNIT         ?C?LIB_CODE
+            CODE    0186H     002BH     UNIT         ?PR?MAIN?MAIN
+            CODE    01B1H     001EH     UNIT         ?PR?IR_REMOTEGETKEY?NEC_IR
+            CODE    01CFH     0018H     UNIT         ?PR?TIMER0_ISR?NEC_IR
+            CODE    01E7H     0014H     UNIT         ?PR?IR_REMOTEINIT?NEC_IR
+            CODE    01FBH     0013H     UNIT         ?C_INITSEG
+
+
+
+OVERLAY MAP OF MODULE:   14b-IrRemoteRelayControl (NEC_IR)
+
+
+SEGMENT                                DATA_GROUP 
+  +--> CALLED SEGMENT                START    LENGTH
+----------------------------------------------------
+?C_C51STARTUP                        -----    -----
+  +--> ?PR?MAIN?MAIN
+  +--> ?C_INITSEG
+
+?PR?MAIN?MAIN                        0013H    0004H
+  +--> ?PR?IR_REMOTEINIT?NEC_IR
+  +--> ?PR?IR_REMOTEGETKEY?NEC_IR
+
+BL51 BANKED LINKER/LOCATER V6.22                                                      08/11/2016  11:32:28  PAGE 2
+
+
+?PR?IR_REMOTEGETKEY?NEC_IR           0017H    0004H
+
+
+
+SYMBOL TABLE OF MODULE:  14b-IrRemoteRelayControl (NEC_IR)
+
+  VALUE           TYPE          NAME
+  ----------------------------------
+
+  -------         MODULE        NEC_IR
+  C:0000H         SYMBOL        _ICE_DUMMY_
+  C:01E7H         PUBLIC        IR_RemoteInit
+  C:01CFH         PUBLIC        timer0_isr
+  B:00A8H.7       PUBLIC        EA
+  C:000EH         PUBLIC        externalIntr0_ISR
+  D:00A8H         PUBLIC        IE
+  D:0008H         PUBLIC        bitPattern
+  D:000CH         PUBLIC        timerValue
+  D:0089H         PUBLIC        TMOD
+  D:000DH         PUBLIC        pulseCount
+  C:01B1H         PUBLIC        IR_RemoteGetKey
+  B:00A8H.1       PUBLIC        ET0
+  D:008CH         PUBLIC        TH0
+  B:00A8H.0       PUBLIC        EX0
+  B:0088H.0       PUBLIC        IT0
+  D:008AH         PUBLIC        TL0
+  B:0088H.4       PUBLIC        TR0
+  D:00C8H         PUBLIC        T2CON
+  D:000EH         PUBLIC        msCount
+  D:000FH         PUBLIC        newKey
+  -------         PROC          TIMER0_ISR
+  C:01CFH         LINE#         65
+  C:01D3H         LINE#         67
+  C:01DAH         LINE#         68
+  C:01DCH         LINE#         70
+  C:01DFH         LINE#         71
+  C:01E2H         LINE#         72
+  -------         ENDPROC       TIMER0_ISR
+  -------         PROC          EXTERNALINTR0_ISR
+  C:000EH         LINE#         76
+  C:0021H         LINE#         78
+  C:0024H         LINE#         79
+  C:0027H         LINE#         81
+  C:002AH         LINE#         82
+  C:002DH         LINE#         84
+  C:002FH         LINE#         86
+  C:0036H         LINE#         87
+  C:0036H         LINE#         88
+  C:0039H         LINE#         89
+  C:0045H         LINE#         90
+  C:0047H         LINE#         91
+  C:0058H         LINE#         92
+  C:0058H         LINE#         93
+  C:005FH         LINE#         94
+  C:005FH         LINE#         95
+  C:0082H         LINE#         96
+  C:0084H         LINE#         98
+BL51 BANKED LINKER/LOCATER V6.22                                                      08/11/2016  11:32:28  PAGE 3
+
+
+  C:0084H         LINE#         100
+  C:0084H         LINE#         101
+  C:0084H         LINE#         102
+  C:008DH         LINE#         103
+  C:008DH         LINE#         104
+  C:0099H         LINE#         105
+  C:009CH         LINE#         106
+  C:009CH         LINE#         107
+  -------         ENDPROC       EXTERNALINTR0_ISR
+  -------         PROC          IR_REMOTEINIT
+  C:01E7H         LINE#         110
+  C:01E7H         LINE#         111
+  C:01E7H         LINE#         112
+  C:01EAH         LINE#         113
+  C:01EDH         LINE#         114
+  C:01F0H         LINE#         115
+  C:01F2H         LINE#         116
+  C:01F4H         LINE#         118
+  C:01F6H         LINE#         119
+  C:01F8H         LINE#         121
+  C:01FAH         LINE#         122
+  -------         ENDPROC       IR_REMOTEINIT
+  -------         PROC          IR_REMOTEGETKEY
+  -------         DO            
+  D:0017H         SYMBOL        keyCode
+  -------         ENDDO         
+  C:01B1H         LINE#         125
+  C:01B1H         LINE#         126
+  C:01B1H         LINE#         128
+  C:01BDH         LINE#         129
+  C:01C6H         LINE#         131
+  C:01CEH         LINE#         132
+  -------         ENDPROC       IR_REMOTEGETKEY
+  -------         ENDMOD        NEC_IR
+
+  -------         MODULE        MAIN
+  C:0000H         SYMBOL        _ICE_DUMMY_
+  D:00B0H         PUBLIC        P3
+  D:00A8H         PUBLIC        IE
+  C:0186H         PUBLIC        main
+  B:00B0H.4       PUBLIC        RELAY_PIN
+  D:00C8H         PUBLIC        T2CON
+  -------         PROC          MAIN
+  -------         DO            
+  D:0013H         SYMBOL        key
+  -------         ENDDO         
+  C:0186H         LINE#         33
+  C:0186H         LINE#         34
+  C:0186H         LINE#         36
+  C:0188H         LINE#         37
+  C:018BH         LINE#         39
+  C:018BH         LINE#         40
+  C:018BH         LINE#         41
+  C:0196H         LINE#         43
+  C:01A9H         LINE#         44
+  C:01A9H         LINE#         45
+  C:01ADH         LINE#         46
+BL51 BANKED LINKER/LOCATER V6.22                                                      08/11/2016  11:32:28  PAGE 4
+
+
+  -------         ENDPROC       MAIN
+  -------         ENDMOD        MAIN
+
+  -------         MODULE        ?C?LSHL
+  C:0139H         PUBLIC        ?C?LSHL
+  -------         ENDMOD        ?C?LSHL
+
+  -------         MODULE        ?C?LCASE
+  C:014CH         PUBLIC        ?C?LCASE
+  -------         ENDMOD        ?C?LCASE
+
+Program Size: data=28.0 xdata=0 code=521
+LINK/LOCATE RUN COMPLETE.  0 WARNING(S),  0 ERROR(S)

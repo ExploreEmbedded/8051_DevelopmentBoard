@@ -1,0 +1,4 @@
+".\nec_ir.obj",
+"main.obj" 
+TO "14b-IrRemoteRelayControl" 
+RAMSIZE(256) 

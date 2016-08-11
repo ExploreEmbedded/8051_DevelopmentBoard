@@ -1,0 +1,6 @@
+"main.obj",
+".\delay.obj",
+".\gpio.obj",
+".\lcd.obj" 
+TO "14a-IrRemoteTest" 
+RAMSIZE(256) 

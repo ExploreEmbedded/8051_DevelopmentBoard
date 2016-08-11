@@ -1,0 +1,53 @@
+<html>
+<body>
+<pre>
+<h1>µVision Build Log</h1>
+<h2>Project:</h2>
+F:\GitHub\8051\8051_DevelopmentBoard\Code\Keil_Sample_Codes\14a-IrRemoteTest\14a-IrRemoteTest.uvproj
+Project File Date:  08/11/2016
+
+<h2>Output:</h2>
+Build target 'Target 1'
+compiling main.c...
+compiling delay.c...
+compiling gpio.c...
+compiling lcd.c...
+linking...
+*** WARNING L1: UNRESOLVED EXTERNAL SYMBOL
+    SYMBOL:  _LCD_PRINTF
+    MODULE:  main.obj (MAIN)
+*** WARNING L1: UNRESOLVED EXTERNAL SYMBOL
+    SYMBOL:  ?_LCD_PRINTF?BYTE
+    MODULE:  main.obj (MAIN)
+*** WARNING L2: REFERENCE MADE TO UNRESOLVED EXTERNAL
+    SYMBOL:  ?_LCD_PRINTF?BYTE
+    MODULE:  main.obj (MAIN)
+    ADDRESS: 036CH
+*** WARNING L2: REFERENCE MADE TO UNRESOLVED EXTERNAL
+    SYMBOL:  ?_LCD_PRINTF?BYTE
+    MODULE:  main.obj (MAIN)
+    ADDRESS: 036FH
+*** WARNING L2: REFERENCE MADE TO UNRESOLVED EXTERNAL
+    SYMBOL:  ?_LCD_PRINTF?BYTE
+    MODULE:  main.obj (MAIN)
+    ADDRESS: 0372H
+*** WARNING L2: REFERENCE MADE TO UNRESOLVED EXTERNAL
+    SYMBOL:  ?_LCD_PRINTF?BYTE
+    MODULE:  main.obj (MAIN)
+    ADDRESS: 0375H
+*** WARNING L2: REFERENCE MADE TO UNRESOLVED EXTERNAL
+    SYMBOL:  _LCD_PRINTF
+    MODULE:  main.obj (MAIN)
+    ADDRESS: 0377H
+Program Size: data=51.0 xdata=0 code=1694
+creating hex file from "14a-IrRemoteTest"...
+"14a-IrRemoteTest" - 0 Error(s), 7 Warning(s).
+Build target 'Target 1'
+compiling main.c...
+compiling delay.c...
+compiling gpio.c...
+compiling lcd.c...
+linking...
+Program Size: data=98.0 xdata=0 code=3191
+creating hex file from "14a-IrRemoteTest"...
+"14a-IrRemoteTest" - 0 Error(s), 0 Warning(s).
