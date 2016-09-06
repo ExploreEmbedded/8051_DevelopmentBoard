@@ -1,7 +1,7 @@
 /***************************************************************************************************
                                     ExploreEmbedded Copyright Notice    
 *****************************************************************************************************
- * File:   gpio.h
+ * File:   gpio.c
  * Version: 16.0
  * Author: ExploreEmbedded
  * Website: http://www.exploreembedded.com/wiki

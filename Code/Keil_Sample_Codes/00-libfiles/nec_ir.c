@@ -61,7 +61,7 @@ uint8_t timerValue;
 uint8_t msCount=0;
 char pulseCount=0;
 
-
+/* Timer0 ISR to generate 1ms delay*/
 void timer0_isr() interrupt 1
 {
     if(msCount<50)
@@ -72,7 +72,13 @@ void timer0_isr() interrupt 1
 }
 
 
-
+/*Falling edge INTO	to decede the IR pulses
+*INT0(P2.2) will be configured as falling Edge interrupt to detect the pulses.
+*Timer0(Mode1) will be configured to generate a periodic interrupt of 1ms.
+First two transitions will be ignored as they will mark SOF(Start of the frame).
+After this continuously 32-bit information will be captured in a variable.
+If the pulse width is greater than 2ms then it will be considered as LOGIC-1 else as LOGIC-0. 
+If the pulse width is greater than 50ms then it will be considered as SOF(Start of the frame).*/
 void externalIntr0_ISR()  interrupt 0
 {
     timerValue = msCount;
@@ -107,6 +113,16 @@ void externalIntr0_ISR()  interrupt 0
 }
 
 
+/**************************************************************************************************
+								void IR_RemoteInit()
+***************************************************************************************************
+ * I/P Arguments:  none
+ * Return value	: none
+
+ * description  :This function is used to the Timer0 for 1ms delay.
+                 INTO interrupt for Falling edge detetion.
+				 Also enables the TImer0 and INTO interrupts
+**************************************************************************************************/
 void IR_RemoteInit(void)
 {
     TMOD |= 0x01;  // Timer0 MODE1(16-bit timer)

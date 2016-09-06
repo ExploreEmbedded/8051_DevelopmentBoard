@@ -1,4 +1,4 @@
-C51 COMPILER V9.02   NEC_IR                                                                08/11/2016 11:32:27 PAGE 1   
+C51 COMPILER V9.02   NEC_IR                                                                08/13/2016 11:50:30 PAGE 1   
 
 
 C51 COMPILER V9.02, COMPILATION OF MODULE NEC_IR
@@ -62,7 +62,7 @@ line level    source
   48          0xFF42BD: 7         
   49          0xFF4AB5: 8         
   50          0xFF52AD: 9 
-C51 COMPILER V9.02   NEC_IR                                                                08/11/2016 11:32:27 PAGE 2   
+C51 COMPILER V9.02   NEC_IR                                                                08/13/2016 11:50:30 PAGE 2   
 
   51          **************************/
   52          
@@ -126,7 +126,7 @@ line level    source
  110          void IR_RemoteInit(void)
  111          {
  112   1          TMOD |= 0x01;  // Timer0 MODE1(16-bit timer)
-C51 COMPILER V9.02   NEC_IR                                                                08/11/2016 11:32:27 PAGE 3   
+C51 COMPILER V9.02   NEC_IR                                                                08/13/2016 11:50:30 PAGE 3   
 
  113   1          TH0 = 0xFC;    // Timer value for 1ms at 11.0592Mhz clock
  114   1          TL0 = 0x67;

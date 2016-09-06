@@ -1,4 +1,4 @@
-C51 COMPILER V9.02   MAIN                                                                  08/11/2016 11:32:27 PAGE 1   
+C51 COMPILER V9.02   MAIN                                                                  08/13/2016 11:50:30 PAGE 1   
 
 
 C51 COMPILER V9.02, COMPILATION OF MODULE MAIN
@@ -41,7 +41,7 @@ line level    source
   28          #include "stdutils.h"
   29          #include "nec_ir.h"
   30          
-  31          sbit RELAY_PIN = P3^4;
+  31          sbit RELAY_PIN = P0^0;
   32          
   33          void main()
   34          {
@@ -62,7 +62,7 @@ line level    source
   48   3              }
   49   2          }           
   50   1      }         
-C51 COMPILER V9.02   MAIN                                                                  08/11/2016 11:32:27 PAGE 2   
+C51 COMPILER V9.02   MAIN                                                                  08/13/2016 11:50:30 PAGE 2   
 
 
 

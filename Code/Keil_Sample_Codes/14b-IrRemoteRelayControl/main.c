@@ -28,7 +28,7 @@ and that both those copyright notices and this permission notice appear in suppo
 #include "stdutils.h"
 #include "nec_ir.h"
 
-sbit RELAY_PIN = P3^4;
+sbit RELAY_PIN = P0^0;
 
 void main()
 {
