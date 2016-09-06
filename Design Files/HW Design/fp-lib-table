@@ -1,0 +1,4 @@
+(fp_lib_table
+  (lib (name logo)(type KiCad)(uri "H:\\PCB_Designes\\LPC1768 Stick1\\lib_new\\logo.pretty")(options "")(descr ""))
+  (lib (name Logo_New)(type KiCad)(uri "H:\\PCB_Designes\\LPC1768 Stick1\\lib_new\\New_Logo.pretty")(options "")(descr ""))
+)
