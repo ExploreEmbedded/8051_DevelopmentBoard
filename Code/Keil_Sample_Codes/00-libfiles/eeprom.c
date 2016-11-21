@@ -38,6 +38,28 @@ and that both those copyright notices and this permission notice appear in suppo
 
 
 
+uint16_t V_EepromType_U16;
+
+
+/***************************************************************************************************
+void EEPROM_Init(uint16_t v_eepromType_u16)
+***************************************************************************************************
+ * I/P Arguments: uint8_t: Pin number that is connected to SDA of I2C EEPROM(AT24xx series).
+                  uint8_t: Pin number that is connected to SCL of I2C EEPROM(AT24xx series).
+                  uint8_t: EEprom IC type(eg:AT24C01 - AT24C256 refer eeprom.h file)
+ * Return value    : none
+
+ * description:This function is used to map the SCL and SDA pins to Eeprom IC.
+               These pins numbers are passed to SoftI2c drivers which will take care of reading and writing the data. 
+
+***************************************************************************************************/
+void EEPROM_Init(uint16_t v_eepromType_u16)
+{
+    V_EepromType_U16 = v_eepromType_u16;
+}
+
+
+
 /***************************************************************************************************
   void EEPROM_WriteByte(uint16_t v_eepromAddress_u16, uint8_t v_eepromData_u8)
 ***************************************************************************************************
@@ -82,7 +104,7 @@ and that both those copyright notices and this permission notice appear in suppo
 
 
     Note: User doesn't have to worry about the address decoding as the library takes care of it.
-          It is just an info, so that proper IC needs to be selected in the eeprom.h file.        
+          It is just an info, so that proper IC needs to be selected from the eeprom.h file.        
 
 ***************************************************************************************************/
 void EEPROM_WriteByte(uint16_t v_eepromAddress_u16, uint8_t v_eepromData_u8)
@@ -91,33 +113,37 @@ void EEPROM_WriteByte(uint16_t v_eepromAddress_u16, uint8_t v_eepromData_u8)
     uint8_t v_eepromLowerAddress_u8;
     uint8_t v_eepromPageNumber_u8;
     uint8_t v_eepromId_u8 = C_EepromIdWriteMode_U8;
-    
-    #if (C_EepromIcType_U16 >  AT24C16)
-        uint8_t v_eepromHigherAddress_u8;
-    #endif
+    uint8_t v_eepromHigherAddress_u8;
 
-    if(v_eepromAddress_u16 < C_MaxEepromSize_U16)    
+    if(v_eepromAddress_u16 < V_EepromType_U16)  // Is Address within the Eeprom Limit   
     {
         v_eepromLowerAddress_u8 = util_ExtractByte0to8(v_eepromAddress_u16);
 
-#if (C_EepromIcType_U16 >  AT24C16)
-        v_eepromHigherAddress_u8 = util_ExtractByte8to16(v_eepromAddress_u16);
-#else
-        v_eepromPageNumber_u8 = util_ExtractByte8to16(v_eepromAddress_u16);
-        v_eepromId_u8 = v_eepromId_u8 | (v_eepromPageNumber_u8 << 1); 
-#endif
+       if (V_EepromType_U16 >  AT24C16)  // If Ic is greater tha 24C16 then double byte address needs to be supported.
+         {
+           v_eepromHigherAddress_u8 = util_ExtractByte8to16(v_eepromAddress_u16);
+         } 
+       else
+         {
+		   /* Single byte address */
+           v_eepromPageNumber_u8 = util_ExtractByte8to16(v_eepromAddress_u16);
+           v_eepromId_u8 = v_eepromId_u8 | (v_eepromPageNumber_u8 << 1);
+         }           
 
         I2C_Start();                       // Start i2c communication
                                            // connect to At24xx by sending its ID on I2c Bus
         I2C_Write(v_eepromId_u8); 
-#if (C_EepromIcType_U16 >  AT24C16)    
-        I2C_Write(v_eepromHigherAddress_u8);
-#endif        
+       
+       if(V_EepromType_U16 >  AT24C16)
+        {           
+           I2C_Write(v_eepromHigherAddress_u8);
+        }  
+       
         I2C_Write(v_eepromLowerAddress_u8); // Select the Specified EEPROM address of At24xx
         I2C_Write(v_eepromData_u8);         // Write the data at specified address
         I2C_Stop();                           // Stop i2c communication after Writing the data
 
-        DELAY_ms(10);                         // Write operation takes max 5ms, refer At24xx data sheet 
+        DELAY_ms(10);                         // Write operation takes 5ms, refer At24xx data sheet 
     }    
 }
 
@@ -170,7 +196,7 @@ void EEPROM_WriteByte(uint16_t v_eepromAddress_u16, uint8_t v_eepromData_u8)
 
 
     Note: User doesn't have to worry about the address decoding as the library takes care of it.
-          It is just an info, so that proper IC needs to be selected in the eeprom.h file.        
+          It is just an info, so that proper IC needs to be selected from the eeprom.h file.        
 
 ***************************************************************************************************/           
 uint8_t EEPROM_ReadByte(uint16_t v_eepromAddress_u16)
@@ -179,27 +205,31 @@ uint8_t EEPROM_ReadByte(uint16_t v_eepromAddress_u16)
     uint8_t v_eepromPageNumber_u8;
     uint8_t v_eepromData_u8 = 0x00;
     uint8_t v_eepromId_u8 = C_EepromIdWriteMode_U8;
-    #if (C_EepromIcType_U16 >  AT24C16)
     uint8_t v_eepromHigherAddress_u8;
-    #endif
 
-    if(v_eepromAddress_u16 < C_MaxEepromSize_U16)    
+    if(v_eepromAddress_u16 < V_EepromType_U16) /* Is address within Eeprom Limit */   
     {
         v_eepromLowerAddress_u8 = util_ExtractByte0to8(v_eepromAddress_u16);
 
-#if (C_EepromIcType_U16 >  AT24C16)
-        v_eepromHigherAddress_u8 = util_ExtractByte8to16(v_eepromAddress_u16);
-#else
-        v_eepromPageNumber_u8 = util_ExtractByte8to16(v_eepromAddress_u16);
-        v_eepromId_u8 = v_eepromId_u8 | (v_eepromPageNumber_u8 << 1); 
-#endif
+       if(V_EepromType_U16 >  AT24C16)
+       {
+           v_eepromHigherAddress_u8 = util_ExtractByte8to16(v_eepromAddress_u16);
+       } 
+      else
+       {
+          v_eepromPageNumber_u8 = util_ExtractByte8to16(v_eepromAddress_u16);
+          v_eepromId_u8 = v_eepromId_u8 | (v_eepromPageNumber_u8 << 1); 
+       }
 
         I2C_Start();                        // Start i2c communication
                                             // connect to At24xx by sending its ID on I2c Bus
         I2C_Write(v_eepromId_u8); 
-#if (C_EepromIcType_U16 >  AT24C16)    
-        I2C_Write(v_eepromHigherAddress_u8);
-#endif        
+     
+      if(V_EepromType_U16 >  AT24C16)    
+        {
+            I2C_Write(v_eepromHigherAddress_u8);
+        }
+        
         I2C_Write(v_eepromLowerAddress_u8); // Select the Specified EEPROM address of At24xx
 
         I2C_Start();                          // Start i2c communication after selecting the address
@@ -207,7 +237,6 @@ uint8_t EEPROM_ReadByte(uint16_t v_eepromAddress_u16)
         v_eepromData_u8 = I2C_Read(0);      // Read the data from specified address
         I2C_Stop();                           // Stop i2c communication after Reading the data
         DELAY_us(10);
-
     }
     return v_eepromData_u8;             // Return the data read from eeprom
 }
@@ -281,7 +310,7 @@ void EEPROM_ReadNBytes(uint16_t v_eepromAddress_16, uint8_t *ptr_ramAddress_u8, 
 
 
 /***************************************************************************************************
- void EEPROM_WriteString(uint16_t v_eepromAddress_u16, char *ptr_stringPointer_u8)
+ void EEPROM_WriteString(uint16_t v_eepromAddress_u16, char *ptr_string_u8)
 ***************************************************************************************************
  * I/P Arguments: uint16_t,: eeprom_address where the String is to be written.
                   char*: Pointer to String which has to be written.
@@ -293,14 +322,14 @@ void EEPROM_ReadNBytes(uint16_t v_eepromAddress_16, uint8_t *ptr_ramAddress_u8, 
    NOTE: Null char is also written into the eeprom.
 ***************************************************************************************************/
 #if ( ENABLE_EEPROM_WriteString == 1)
-void EEPROM_WriteString(uint16_t v_eepromAddress_u16, char *ptr_stringPointer_u8)
+void EEPROM_WriteString(uint16_t v_eepromAddress_u16, uint8_t *ptr_string_u8)
 {
     do
     {
-        EEPROM_WriteByte(v_eepromAddress_u16,*ptr_stringPointer_u8); //Write a byte from RAM to EEPROM
-        ptr_stringPointer_u8++;                                //Increment the RAM Address
+        EEPROM_WriteByte(v_eepromAddress_u16,*ptr_string_u8); //Write a byte from RAM to EEPROM
+        ptr_string_u8++;                                //Increment the RAM Address
         v_eepromAddress_u16++;                                //Increment the Eeprom Address
-    }while(*(ptr_stringPointer_u8-1) !=0);
+    }while(*(ptr_string_u8-1) !=0);
 }
 #endif
 
@@ -319,7 +348,7 @@ void EEPROM_ReadString(uint16_t v_eepromAddress_u16, char *ptr_destStringAddress
            The string read from eeprom will be copied to specified buffer along with NULL character
 ****************************************************************************************************/
 #if ( ENABLE_EEPROM_ReadString == 1)
-void EEPROM_ReadString(uint16_t v_eepromAddress_u16, char *ptr_destStringAddress_u8)
+void EEPROM_ReadString(uint16_t v_eepromAddress_u16, uint8_t *ptr_destStringAddress_u8)
 {
     char eeprom_data;
 
@@ -345,14 +374,14 @@ void EEPROM_ReadString(uint16_t v_eepromAddress_u16, char *ptr_destStringAddress
  * Return value    : none
 
  * description: This function is used to erase the entire Eeprom memory.
-               Complete Eeprom(C_MaxEepromSize_U16) is filled with 0xFF to accomplish the Eeprom Erase.
+               Complete Eeprom(V_EepromType_U16) is filled with 0xFF to accomplish the Eeprom Erase.
 ****************************************************************************************************/
 #if ( ENABLE_EEPROM_Erase == 1)
 void EEPROM_Erase(void)
 {
     uint16_t v_eepromAddress_u16;
 
-    for(v_eepromAddress_u16=0;v_eepromAddress_u16<C_MaxEepromSize_U16;v_eepromAddress_u16++)
+    for(v_eepromAddress_u16=0;v_eepromAddress_u16<V_EepromType_U16;v_eepromAddress_u16++)
     {
         EEPROM_WriteByte(v_eepromAddress_u16,0xffu); // Write Each memory location with OxFF
     }

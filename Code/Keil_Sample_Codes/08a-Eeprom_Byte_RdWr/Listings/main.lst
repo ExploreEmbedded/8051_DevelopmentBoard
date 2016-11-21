@@ -1,4 +1,4 @@
-C51 COMPILER V9.02   MAIN                                                                  02/26/2016 20:38:42 PAGE 1   
+C51 COMPILER V9.02   MAIN                                                                  11/21/2016 11:13:18 PAGE 1   
 
 
 C51 COMPILER V9.02, COMPILATION OF MODULE MAIN
@@ -9,7 +9,7 @@ COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE 
 line level    source
 
    1          /***************************************************************************************************
-   2                                             ExploreEmbedded
+   2                                                        ExploreEmbedded Copyright Notice 
    3          ****************************************************************************************************
    4           * File:   main.c
    5           * Version: 16.0
@@ -18,63 +18,59 @@ line level    source
    8           * Description: This file contains the program to write A-Z at memory location 0x00 and read it back.
    9           *              The data read and written is transmitted on UART.  
   10          
-  11          The libraries have been tested on ExploreEmbedded development boards. We strongly believe that the
-  12          library works on any of development boards for respective controllers. However, ExploreEmbedded
-  13          disclaims any kind of hardware failure resulting out of usage of libraries, directly or indirectly.
-  14          Files may be subject to change without prior notice. The revision history contains the information
-  15          related to updates.
-  16          
-  17          
-  18          GNU GENERAL PUBLIC LICENSE:
-  19              Copyright (C) 2012  ExploreEmbedded
-  20          
-  21              This program is free software: you can redistribute it and/or modify
-  22              it under the terms of the GNU General Public License as published by
-  23              the Free Software Foundation, either version 3 of the License, or
-  24              (at your option) any later version.
-  25          
-  26              This program is distributed in the hope that it will be useful,
-  27              but WITHOUT ANY WARRANTY; without even the implied warranty of
-  28              MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  29              GNU General Public License for more details.
-  30          
-  31              You should have received a copy of the GNU General Public License
-  32              along with this program.  If not, see <http://www.gnu.org/licenses/>.
-  33          
-  34          
-  35          Errors and omissions should be reported to codelibraries@exploreembedded.com
-  36          **************************************************************************************************/
-  37          
-  38          #include "uart.h"
-  39          #include "eeprom.h"
-  40          
-  41          /* start the main program */
-  42          int main() 
-  43          {
-  44   1          unsigned char eeprom_address = 0x00, write_char = 'X', read_char;
-  45   1      
-  46   1          UART_Init(9600);
-  47   1      
-  48   1          for(write_char='A';write_char<='Z';write_char++)
-  49   1          {
-  50   2              UART_Printf("\n\rEeprom Write: %c    ",write_char); //Print the message on UART
-  51   2              EEPROM_WriteByte(eeprom_address, write_char); // Write the data at memoryLocation 0x00
-  52   2      
-  53   2      
-  54   2              read_char = EEPROM_ReadByte(eeprom_address);  // Read the data from memoryLocation 0x00
-C51 COMPILER V9.02   MAIN                                                                  02/26/2016 20:38:42 PAGE 2   
+  11          This code has been developed and tested on ExploreEmbedded boards.  
+  12          We strongly believe that the library works on any of development boards for respective controllers. 
+  13          Check this link http://www.exploreembedded.com/wiki for awesome tutorials on 8051,PIC,AVR,ARM,Robotics,RTO
+             -S,IOT.
+  14          ExploreEmbedded invests substantial time and effort developing open source HW and SW tools, to support con
+             -sider buying the ExploreEmbedded boards.
+  15           
+  16          The ExploreEmbedded libraries and examples are licensed under the terms of the new-bsd license(two-clause 
+             -bsd license).
+  17          See also: http://www.opensource.org/licenses/bsd-license.php
+  18          
+  19          EXPLOREEMBEDDED DISCLAIMS ANY KIND OF HARDWARE FAILURE RESULTING OUT OF USAGE OF LIBRARIES, DIRECTLY OR
+  20          INDIRECTLY. FILES MAY BE SUBJECT TO CHANGE WITHOUT PRIOR NOTICE. THE REVISION HISTORY CONTAINS THE INFORMA
+             -TION 
+  21          RELATED TO UPDATES.
+  22           
+  23          
+  24          Permission to use, copy, modify, and distribute this software and its documentation for any purpose
+  25          and without fee is hereby granted, provided that this copyright notices appear in all copies 
+  26          and that both those copyright notices and this permission notice appear in supporting documentation.
+  27          **************************************************************************************************/
+  28          
+  29          #include "uart.h"
+  30          #include "eeprom.h"
+  31          
+  32          /* start the main program */
+  33          int main() 
+  34          {
+  35   1          unsigned char eeprom_address = 0x00, write_char = 'X', read_char;
+  36   1      
+  37   1          UART_Init(9600);
+  38   1          EEPROM_Init(AT24C16);
+  39   1      
+  40   1          for(write_char='A';write_char<='Z';write_char++)
+  41   1          {
+  42   2              UART_Printf("\n\rEeprom Write: %c    ",write_char); //Print the message on UART
+  43   2              EEPROM_WriteByte(eeprom_address, write_char); // Write the data at memoryLocation 0x00
+  44   2      
+  45   2      
+  46   2              read_char = EEPROM_ReadByte(eeprom_address);  // Read the data from memoryLocation 0x00
+  47   2              UART_Printf("Eeprom Read: %c",read_char); //Print the message on UART
+  48   2          }
+  49   1          
+  50   1          while (1);
+C51 COMPILER V9.02   MAIN                                                                  11/21/2016 11:13:18 PAGE 2   
 
-  55   2              UART_Printf("Eeprom Read: %c",read_char); //Print the message on UART
-  56   2          }
-  57   1          
-  58   1          while (1);
-  59   1      
-  60   1          return 0;
-  61   1      }
+  51   1      
+  52   1          return 0;
+  53   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =     71    ----
+   CODE SIZE        =     78    ----
    CONSTANT SIZE    =     39    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----

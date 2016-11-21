@@ -36,6 +36,7 @@ int main()
     unsigned char read_str[16];
 
     UART_Init(9600);
+	  EEPROM_Init(AT24C16);
 
     UART_Printf("\n\rEeprom Write String: %s", write_str); //Print the message on UART
     EEPROM_WriteString(eeprom_address, write_str); // Write the string at memoryLocation	0x00

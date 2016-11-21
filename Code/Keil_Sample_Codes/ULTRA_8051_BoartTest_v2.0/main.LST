@@ -1,4 +1,4 @@
-C51 COMPILER V9.02   MAIN                                                                  07/04/2016 15:49:12 PAGE 1   
+C51 COMPILER V9.02   MAIN                                                                  11/21/2016 11:18:06 PAGE 1   
 
 
 C51 COMPILER V9.02, COMPILATION OF MODULE MAIN
@@ -62,7 +62,7 @@ line level    source
   48          #define LedOn    0xFF
   49          #define LedOff   0x00
   50          #define SegOne   0x01
-C51 COMPILER V9.02   MAIN                                                                  07/04/2016 15:49:12 PAGE 2   
+C51 COMPILER V9.02   MAIN                                                                  11/21/2016 11:18:06 PAGE 2   
 
   51          #define SegTwo   0x02
   52          #define SegThree 0x04
@@ -126,7 +126,7 @@ line level    source
  110   1          UART_Printf("\n\rMake connections and hit 'k' to test ");
  111   1          while(UART_RxChar()!='k');
  112   1      
-C51 COMPILER V9.02   MAIN                                                                  07/04/2016 15:49:12 PAGE 3   
+C51 COMPILER V9.02   MAIN                                                                  11/21/2016 11:18:06 PAGE 3   
 
  113   1          while(1)
  114   1          {
@@ -190,7 +190,7 @@ line level    source
  172   1          LCD_DisplayString("Lcd 4-bit Mode");
  173   1          while(1);
  174   1      }
-C51 COMPILER V9.02   MAIN                                                                  07/04/2016 15:49:12 PAGE 4   
+C51 COMPILER V9.02   MAIN                                                                  11/21/2016 11:18:06 PAGE 4   
 
  175          
  176          
@@ -254,7 +254,7 @@ line level    source
  234   1      
  235   1      
  236   1          /* Display the Time and Date continuously */
-C51 COMPILER V9.02   MAIN                                                                  07/04/2016 15:49:12 PAGE 5   
+C51 COMPILER V9.02   MAIN                                                                  11/21/2016 11:18:06 PAGE 5   
 
  237   1          while(1)
  238   1          {
@@ -274,74 +274,75 @@ line level    source
  251   1          UART_Printf("\n\rConnections SCL->P0.6 SDA->P0.7");
  252   1          UART_Printf("\n\r Make connections and hit 'k' to test! ");
  253   1          while(UART_RxChar()!='k');
- 254   1      
- 255   1          for(write_char='A';write_char<='Z';write_char++)
- 256   1          {
- 257   2            
- 258   2              UART_TxString("\n\rEeprom Write: \n");      //Print the message on UART
- 259   2              UART_TxChar(write_char);                     //Print the char to be written
- 260   2              EEPROM_WriteByte(eeprom_address,write_char);    // Write the data at memoryLocation    0x00
- 261   2      
- 262   2              UART_TxString("  Eeprom Read: ");            //Print the message on UART
- 263   2              read_char = EEPROM_ReadByte(eeprom_address);    // Read the data from memoryLocation 0x00
- 264   2              UART_TxChar(read_char);
- 265   2          }
- 266   1          
- 267   1          while(1);
- 268   1      }
- 269          
- 270          /***************************************************ADC******************************************
- 271                           Reads and displays ADC data from on board sensors.
- 272           ******************************************************TEST*****************************************/
- 273          void adc_test()
- 274          {
- 275   1          uint16_t temp,light,pot;
- 276   1          UART_Printf("\n\rADC-0809 Connections:\n\r" 
- 277   1                      "DataBus  --> P2   \n\r"
- 278   1                      "adc_A    --> P1.0 \n\r" 
- 279   1                      "adc_B    --> P1.1 \n\r"
- 280   1                      "adc_C    --> P1.2 \n\r"
- 281   1                      "adc_ALE  --> P1.3 \n\r"
- 282   1                      "adc_Start--> P1.4 \n\r"
- 283   1                      "adc_EOC  --> P1.5 \n\r"
- 284   1                      "adc_OE   --> P1.6 \n\r");
- 285   1          UART_Printf("Make connections and hit 'k' to test!");
- 286   1          while(UART_RxChar()!='k');
- 287   1          ADC_Init();
- 288   1      
- 289   1          while(1)
- 290   1          {
- 291   2              temp = ADC_GetAdcValue(0) * 2;
- 292   2              pot = ADC_GetAdcValue(1);
- 293   2              light = ADC_GetAdcValue(2);
- 294   2              UART_Printf("\n\rtemp:%3d pot:%3d light:%3d", temp,pot,light);
- 295   2          }
- 296   1      }
- 297          
-C51 COMPILER V9.02   MAIN                                                                  07/04/2016 15:49:12 PAGE 6   
+ 254   1          EEPROM_Init(AT24C16);
+ 255   1      
+ 256   1          for(write_char='A';write_char<='Z';write_char++)
+ 257   1          {
+ 258   2            
+ 259   2              UART_TxString("\n\rEeprom Write: \n");      //Print the message on UART
+ 260   2              UART_TxChar(write_char);                     //Print the char to be written
+ 261   2              EEPROM_WriteByte(eeprom_address,write_char);    // Write the data at memoryLocation    0x00
+ 262   2      
+ 263   2              UART_TxString("  Eeprom Read: ");            //Print the message on UART
+ 264   2              read_char = EEPROM_ReadByte(eeprom_address);    // Read the data from memoryLocation 0x00
+ 265   2              UART_TxChar(read_char);
+ 266   2          }
+ 267   1          
+ 268   1          while(1);
+ 269   1      }
+ 270          
+ 271          /***************************************************ADC******************************************
+ 272                           Reads and displays ADC data from on board sensors.
+ 273           ******************************************************TEST*****************************************/
+ 274          void adc_test()
+ 275          {
+ 276   1          uint16_t temp,light,pot;
+ 277   1          UART_Printf("\n\rADC-0809 Connections:\n\r" 
+ 278   1                      "DataBus  --> P2   \n\r"
+ 279   1                      "adc_A    --> P1.0 \n\r" 
+ 280   1                      "adc_B    --> P1.1 \n\r"
+ 281   1                      "adc_C    --> P1.2 \n\r"
+ 282   1                      "adc_ALE  --> P1.3 \n\r"
+ 283   1                      "adc_Start--> P1.4 \n\r"
+ 284   1                      "adc_EOC  --> P1.5 \n\r"
+ 285   1                      "adc_OE   --> P1.6 \n\r");
+ 286   1          UART_Printf("Make connections and hit 'k' to test!");
+ 287   1          while(UART_RxChar()!='k');
+ 288   1          ADC_Init();
+ 289   1      
+ 290   1          while(1)
+ 291   1          {
+ 292   2              temp = ADC_GetAdcValue(0) * 2;
+ 293   2              pot = ADC_GetAdcValue(1);
+ 294   2              light = ADC_GetAdcValue(2);
+ 295   2              UART_Printf("\n\rtemp:%3d pot:%3d light:%3d", temp,pot,light);
+ 296   2          }
+ 297   1      }
+C51 COMPILER V9.02   MAIN                                                                  11/21/2016 11:18:06 PAGE 6   
 
  298          
- 299          /***************************************************KEYPAD******************************************
- 300                           Displays keys pressed on 4x4 keypad on the uart
- 301           ******************************************************TEST*******************************************/
- 302          void keypad_test()
- 303          {
- 304   1          uint8_t key;
- 305   1          UART_Printf("\n\rConnections: Port 2");
- 306   1          UART_Printf("\n\rMake connections and hit 'k' to test!");
- 307   1          while(UART_RxChar()!='k');
- 308   1      
- 309   1          KEYPAD_Init(P2_0,P2_1,P2_2,P2_3,P2_4,P2_5,P2_6,P2_7);
- 310   1          while(1)
- 311   1          {
- 312   2              key = KEYPAD_GetKey();
- 313   2              UART_Printf("\n\r Key:%c",key);
- 314   2          }
- 315   1      }
+ 299          
+ 300          /***************************************************KEYPAD******************************************
+ 301                           Displays keys pressed on 4x4 keypad on the uart
+ 302           ******************************************************TEST*******************************************/
+ 303          void keypad_test()
+ 304          {
+ 305   1          uint8_t key;
+ 306   1          UART_Printf("\n\rConnections: Port 2");
+ 307   1          UART_Printf("\n\rMake connections and hit 'k' to test!");
+ 308   1          while(UART_RxChar()!='k');
+ 309   1      
+ 310   1          KEYPAD_Init(P2_0,P2_1,P2_2,P2_3,P2_4,P2_5,P2_6,P2_7);
+ 311   1          while(1)
+ 312   1          {
+ 313   2              key = KEYPAD_GetKey();
+ 314   2              UART_Printf("\n\r Key:%c",key);
+ 315   2          }
+ 316   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    963    ----
+   CODE SIZE        =    970    ----
    CONSTANT SIZE    =   1089    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----

@@ -35,6 +35,7 @@ int main()
     unsigned char eeprom_address = 0x00, write_char = 'X', read_char;
 
     UART_Init(9600);
+	  EEPROM_Init(AT24C16);
 
     for(write_char='A';write_char<='Z';write_char++)
     {

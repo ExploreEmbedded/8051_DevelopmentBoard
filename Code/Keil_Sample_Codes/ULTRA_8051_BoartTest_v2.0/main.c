@@ -251,6 +251,7 @@ void eeprom_test()
     UART_Printf("\n\rConnections SCL->P0.6 SDA->P0.7");
     UART_Printf("\n\r Make connections and hit 'k' to test! ");
     while(UART_RxChar()!='k');
+	  EEPROM_Init(AT24C16);
 
     for(write_char='A';write_char<='Z';write_char++)
     {

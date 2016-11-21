@@ -5,10 +5,10 @@
 <h2>Tool Versions:</h2>
 IDE-Version: µVision V5.17.0.0
 Copyright (C) 2015 ARM Ltd and ARM Germany GmbH. All rights reserved.
-License Information: a a, a, LIC=MPY74-FIDJL-VMI9I-TSJ7N-WEZBI-ISH5C
+License Information: a a, a, LIC=JDJCX-HM6TH-C97GY-I5T4P-WNZ03-BTAMJ
  
 Tool Versions:
-Toolchain:       PK51 Prof. Developers Kit  Version: 9.02
+Toolchain:       MDK51 Professional  Version: 9.02
 Toolchain Path:  C:\Keil_v5\C51\BIN
 C Compiler:      C51.exe V9.02
 Assembler:       A51.exe V8.02
@@ -18,7 +18,7 @@ Hex Converter:   OH51.exe V2.6
 CPU DLL:         S8051.DLL V3.73
 Dialog DLL:      DP51.DLL V2.61 
 <h2>Project:</h2>
-F:\Tutorials_And_Codes\8051\Ultra_8051_Board\08b-Eeprom_String_RdWr\08b-Eeprom_String_RdWr.uvproj
+F:\GitHub\8051\8051_DevelopmentBoard\Code\Keil_Sample_Codes\08b-Eeprom_String_RdWr\08b-Eeprom_String_RdWr.uvproj
 Project File Date:  02/26/2016
 
 <h2>Output:</h2>
@@ -30,29 +30,13 @@ compiling i2c.c...
 compiling uart.c...
 linking...
 *** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
-    SEGMENT: ?PR?_EEPROM_WRITEBYTE?EEPROM
-*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
-    SEGMENT: ?PR?_EEPROM_READBYTE?EEPROM
+    SEGMENT: ?PR?EEPROM_ERASE?EEPROM
 *** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
     SEGMENT: ?PR?I2C_INIT?I2C
 *** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
     SEGMENT: ?PR?_UART_RXSTRING?UART
-*** WARNING L1: UNRESOLVED EXTERNAL SYMBOL
-    SYMBOL:  _EEPROM_READSTRING
-    MODULE:  .\Objects\main.obj (MAIN)
-*** WARNING L1: UNRESOLVED EXTERNAL SYMBOL
-    SYMBOL:  _EEPROM_WRITESTRING
-    MODULE:  .\Objects\main.obj (MAIN)
-*** WARNING L2: REFERENCE MADE TO UNRESOLVED EXTERNAL
-    SYMBOL:  _EEPROM_WRITESTRING
-    MODULE:  .\Objects\main.obj (MAIN)
-    ADDRESS: 0752H
-*** WARNING L2: REFERENCE MADE TO UNRESOLVED EXTERNAL
-    SYMBOL:  _EEPROM_READSTRING
-    MODULE:  .\Objects\main.obj (MAIN)
-    ADDRESS: 075FH
-Program Size: data=110.0 xdata=0 code=2558
-".\Objects\08b-Eeprom_String_RdWr" - 0 Error(s), 8 Warning(s).
+Program Size: data=103.0 xdata=0 code=2848
+".\Objects\08b-Eeprom_String_RdWr" - 0 Error(s), 3 Warning(s).
 Build Time Elapsed:  00:00:00
 </pre>
 </body>

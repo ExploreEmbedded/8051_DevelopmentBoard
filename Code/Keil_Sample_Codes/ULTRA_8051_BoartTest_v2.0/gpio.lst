@@ -1,4 +1,4 @@
-C51 COMPILER V9.02   GPIO                                                                  07/04/2016 15:49:08 PAGE 1   
+C51 COMPILER V9.02   GPIO                                                                  11/21/2016 11:18:05 PAGE 1   
 
 
 C51 COMPILER V9.02, COMPILATION OF MODULE GPIO
@@ -11,7 +11,7 @@ line level    source
    1          /***************************************************************************************************
    2                                              ExploreEmbedded Copyright Notice    
    3          *****************************************************************************************************
-   4           * File:   gpio.h
+   4           * File:   gpio.c
    5           * Version: 16.0
    6           * Author: ExploreEmbedded
    7           * Website: http://www.exploreembedded.com/wiki
@@ -62,7 +62,7 @@ line level    source
   48                          Before updating the pins status, the pin function should be selected and then
   49                          the pin should be configured as OUTPUT 
   50          ****************************************************************************************************/
-C51 COMPILER V9.02   GPIO                                                                  07/04/2016 15:49:08 PAGE 2   
+C51 COMPILER V9.02   GPIO                                                                  11/21/2016 11:18:05 PAGE 2   
 
   51          void GPIO_PinWrite(gpioPins_et enm_pinNumber, uint8_t v_pinValue_u8)
   52          {
@@ -126,7 +126,7 @@ line level    source
  110   1          /* Go to particular port after decoding from the pin number and read the pins status */
  111   1          switch(v_portNumber_u8)     
  112   1          {                             
-C51 COMPILER V9.02   GPIO                                                                  07/04/2016 15:49:08 PAGE 3   
+C51 COMPILER V9.02   GPIO                                                                  11/21/2016 11:18:05 PAGE 3   
 
  113   2          case 0: 
  114   2              returnStatus = util_IsBitSet(P0,enm_pinNumber);
