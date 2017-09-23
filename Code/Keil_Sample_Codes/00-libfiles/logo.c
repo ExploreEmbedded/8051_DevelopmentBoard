@@ -63,7 +63,7 @@ and that both those copyright notices and this permission notice appear in suppo
 /****************************************************************************
                 Select one of the above logos to be displayed
 ****************************************************************************/								
-#define SelectLogo _NoLogo_
+#define SelectLogo _exploreEmbedded_
 /***************************************************************************/
 
 

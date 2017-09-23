@@ -1,0 +1,59 @@
+C51 COMPILER V9.02   MAIN                                                                  09/23/2017 12:55:49 PAGE 1   
+
+
+C51 COMPILER V9.02, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE INCDIR(..\00-libfiles) DEBUG OBJECTEXTEN
+                    -D TABS(2)
+
+line level    source
+
+   1          #include "glcd.h"   
+   2          #include "delay.h"
+   3          
+   4          #define DELAY_TIME 3000
+   5          
+   6          void main() 
+   7          {
+   8   1          int num = 1234;
+   9   1          GLCD_Init();
+  10   1      
+  11   1          while (1) 
+  12   1          {
+  13   2              GLCD_Clear();
+  14   2              GLCD_DisplayLogo(LogoBitMap);
+  15   2              DELAY_ms(DELAY_TIME);
+  16   2      
+  17   2              GLCD_Clear();
+  18   2              GLCD_Printf("Dec:%d \nHex:%x \nBin:%b \nFloat:%f", num, num, num, 4567.89);
+  19   2              DELAY_ms(DELAY_TIME);
+  20   2      
+  21   2              GLCD_Clear();
+  22   2              GLCD_HorizontalGraph(0, 45);
+  23   2              GLCD_HorizontalGraph(1, 50);
+  24   2              GLCD_HorizontalGraph(2, 82);
+  25   2              GLCD_HorizontalGraph(3, 74);
+  26   2              DELAY_ms(DELAY_TIME);
+  27   2      
+  28   2              GLCD_Clear();
+  29   2              GLCD_VerticalGraph(0, 45);
+  30   2              GLCD_VerticalGraph(1, 50);
+  31   2              GLCD_VerticalGraph(2, 82);
+  32   2              GLCD_VerticalGraph(3, 74);
+  33   2              DELAY_ms(DELAY_TIME);
+  34   2          }
+  35   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    156    ----
+   CONSTANT SIZE    =     33    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       2
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

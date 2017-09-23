@@ -1,0 +1,1177 @@
+C51 COMPILER V9.02   GLCD                                                                  09/23/2017 12:55:50 PAGE 1   
+
+
+C51 COMPILER V9.02, COMPILATION OF MODULE GLCD
+OBJECT MODULE PLACED IN .\glcd.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE ..\00-libfiles\glcd.c OPTIMIZE(8,SPEED) BROWSE INCDIR(..\00-libfiles) DE
+                    -BUG OBJECTEXTEND PRINT(.\glcd.lst) TABS(2) OBJECT(.\glcd.obj)
+
+line level    source
+
+   1          /***************************************************************************************************
+   2                                              ExploreEmbedded Copyright Notice    
+   3          *****************************************************************************************************
+   4           * File:   glcd.c
+   5           * Version: 16.0
+   6           * Author: ExploreEmbedded
+   7           * Website: http://www.exploreembedded.com/wiki
+   8           * Description: File contains the Library routines for KS108 Graphical LCD(GLCD)
+   9          
+  10          This code has been developed and tested on ExploreEmbedded boards.  
+  11          We strongly believe that the library works on any of development boards for respective controllers. 
+  12          Check this link http://www.exploreembedded.com/wiki for awesome tutorials on 8051,PIC,AVR,ARM,Robotics,RTO
+             -S,IOT.
+  13          ExploreEmbedded invests substantial time and effort developing open source HW and SW tools, to support con
+             -sider buying the ExploreEmbedded boards.
+  14           
+  15          The ExploreEmbedded libraries and examples are licensed under the terms of the new-bsd license(two-clause 
+             -bsd license).
+  16          See also: http://www.opensource.org/licenses/bsd-license.php
+  17          
+  18          EXPLOREEMBEDDED DISCLAIMS ANY KIND OF HARDWARE FAILURE RESULTING OUT OF USAGE OF LIBRARIES, DIRECTLY OR
+  19          INDIRECTLY. FILES MAY BE SUBJECT TO CHANGE WITHOUT PRIOR NOTICE. THE REVISION HISTORY CONTAINS THE INFORMA
+             -TION 
+  20          RELATED TO UPDATES.
+  21           
+  22          
+  23          Permission to use, copy, modify, and distribute this software and its documentation for any purpose
+  24          and without fee is hereby granted, provided that this copyright notices appear in all copies 
+  25          and that both those copyright notices and this permission notice appear in supporting documentation.
+  26          ***************************************************************************************************/
+  27          #include <reg51.h>
+  28          #include "glcd.h"
+  29          
+  30          
+  31          
+  32          
+  33          
+  34          /***************************************************************************************************
+  35                                            Local Function Declaration   
+  36          ***************************************************************************************************/
+  37          void glcd_SelectPage0();
+  38          void glcd_SelectPage1();
+  39          void glcd_BusyCheck();
+  40          void glcd_CmdWrite( uint8_t cmd);
+  41          void glcd_DataWrite( uint8_t dat);
+  42          /**************************************************************************************************/
+  43          
+  44          
+  45          #define FONT_SIZE 5
+  46          code const A_GlcdFontTable_U8[][5]=
+  47          {
+  48          0x00, 0x00, 0x00, 0x00, 0x00,   // space
+  49          0x00, 0x00, 0x2f, 0x00, 0x00,   // !
+  50          0x00, 0x07, 0x00, 0x07, 0x00,   // "
+C51 COMPILER V9.02   GLCD                                                                  09/23/2017 12:55:50 PAGE 2   
+
+  51          0x14, 0x7f, 0x14, 0x7f, 0x14,   // #
+  52          0x24, 0x2a, 0x7f, 0x2a, 0x12,   // $
+  53          0x23, 0x13, 0x08, 0x64, 0x62,   // %
+  54          0x36, 0x49, 0x55, 0x22, 0x50,   // &
+  55          0x00, 0x05, 0x03, 0x00, 0x00,   // '
+  56          0x00, 0x1c, 0x22, 0x41, 0x00,   // (
+  57          0x00, 0x41, 0x22, 0x1c, 0x00,   // )
+  58          0x14, 0x08, 0x3E, 0x08, 0x14,   // *
+  59          0x08, 0x08, 0x3E, 0x08, 0x08,   // +
+  60          0x00, 0x00, 0xA0, 0x60, 0x00,   // ,
+  61          0x08, 0x08, 0x08, 0x08, 0x08,   // -
+  62          0x00, 0x60, 0x60, 0x00, 0x00,   // .
+  63          0x20, 0x10, 0x08, 0x04, 0x02,   // /
+  64          
+  65          0x3E, 0x51, 0x49, 0x45, 0x3E,   // 0
+  66          0x00, 0x42, 0x7F, 0x40, 0x00,   // 1
+  67          0x42, 0x61, 0x51, 0x49, 0x46,   // 2
+  68          0x21, 0x41, 0x45, 0x4B, 0x31,   // 3
+  69          0x18, 0x14, 0x12, 0x7F, 0x10,   // 4
+  70          0x27, 0x45, 0x45, 0x45, 0x39,   // 5
+  71          0x3C, 0x4A, 0x49, 0x49, 0x30,   // 6
+  72          0x01, 0x71, 0x09, 0x05, 0x03,   // 7
+  73          0x36, 0x49, 0x49, 0x49, 0x36,   // 8
+  74          0x06, 0x49, 0x49, 0x29, 0x1E,   // 9
+  75          
+  76          0x00, 0x36, 0x36, 0x00, 0x00,   // :
+  77          0x00, 0x56, 0x36, 0x00, 0x00,   // ;
+  78          0x08, 0x14, 0x22, 0x41, 0x00,   // <
+  79          0x14, 0x14, 0x14, 0x14, 0x14,   // =
+  80          0x00, 0x41, 0x22, 0x14, 0x08,   // >
+  81          0x02, 0x01, 0x51, 0x09, 0x06,   // ?
+  82          0x32, 0x49, 0x59, 0x51, 0x3E,   // @
+  83          
+  84          0x7C, 0x12, 0x11, 0x12, 0x7C,   // A
+  85          0x7F, 0x49, 0x49, 0x49, 0x36,   // B
+  86          0x3E, 0x41, 0x41, 0x41, 0x22,   // C
+  87          0x7F, 0x41, 0x41, 0x22, 0x1C,   // D
+  88          0x7F, 0x49, 0x49, 0x49, 0x41,   // E
+  89          0x7F, 0x09, 0x09, 0x09, 0x01,   // F
+  90          0x3E, 0x41, 0x49, 0x49, 0x7A,   // G
+  91          0x7F, 0x08, 0x08, 0x08, 0x7F,   // H
+  92          0x00, 0x41, 0x7F, 0x41, 0x00,   // I
+  93          0x20, 0x40, 0x41, 0x3F, 0x01,   // J
+  94          0x7F, 0x08, 0x14, 0x22, 0x41,   // K
+  95          0x7F, 0x40, 0x40, 0x40, 0x40,   // L
+  96          0x7F, 0x02, 0x0C, 0x02, 0x7F,   // M
+  97          0x7F, 0x04, 0x08, 0x10, 0x7F,   // N
+  98          0x3E, 0x41, 0x41, 0x41, 0x3E,   // O
+  99          0x7F, 0x09, 0x09, 0x09, 0x06,   // P
+ 100          0x3E, 0x41, 0x51, 0x21, 0x5E,   // Q
+ 101          0x7F, 0x09, 0x19, 0x29, 0x46,   // R
+ 102          0x46, 0x49, 0x49, 0x49, 0x31,   // S
+ 103          0x01, 0x01, 0x7F, 0x01, 0x01,   // T
+ 104          0x3F, 0x40, 0x40, 0x40, 0x3F,   // U
+ 105          0x1F, 0x20, 0x40, 0x20, 0x1F,   // V
+ 106          0x3F, 0x40, 0x38, 0x40, 0x3F,   // W
+ 107          0x63, 0x14, 0x08, 0x14, 0x63,   // X
+ 108          0x07, 0x08, 0x70, 0x08, 0x07,   // Y
+ 109          0x61, 0x51, 0x49, 0x45, 0x43,   // Z
+ 110          
+ 111          0x00, 0x7F, 0x41, 0x41, 0x00,   // [
+ 112          0x55, 0xAA, 0x55, 0xAA, 0x55,   // Backslash (Checker pattern)
+C51 COMPILER V9.02   GLCD                                                                  09/23/2017 12:55:50 PAGE 3   
+
+ 113          0x00, 0x41, 0x41, 0x7F, 0x00,   // ]
+ 114          0x04, 0x02, 0x01, 0x02, 0x04,   // ^
+ 115          0x40, 0x40, 0x40, 0x40, 0x40,   // _
+ 116          0x00, 0x03, 0x05, 0x00, 0x00,   // `
+ 117          
+ 118          0x20, 0x54, 0x54, 0x54, 0x78,   // a
+ 119          0x7F, 0x48, 0x44, 0x44, 0x38,   // b
+ 120          0x38, 0x44, 0x44, 0x44, 0x20,   // c
+ 121          0x38, 0x44, 0x44, 0x48, 0x7F,   // d
+ 122          0x38, 0x54, 0x54, 0x54, 0x18,   // e
+ 123          0x08, 0x7E, 0x09, 0x01, 0x02,   // f
+ 124          0x18, 0xA4, 0xA4, 0xA4, 0x7C,   // g
+ 125          0x7F, 0x08, 0x04, 0x04, 0x78,   // h
+ 126          0x00, 0x44, 0x7D, 0x40, 0x00,   // i
+ 127          0x40, 0x80, 0x84, 0x7D, 0x00,   // j
+ 128          0x7F, 0x10, 0x28, 0x44, 0x00,   // k
+ 129          0x00, 0x41, 0x7F, 0x40, 0x00,   // l
+ 130          0x7C, 0x04, 0x18, 0x04, 0x78,   // m
+ 131          0x7C, 0x08, 0x04, 0x04, 0x78,   // n
+ 132          0x38, 0x44, 0x44, 0x44, 0x38,   // o
+ 133          0xFC, 0x24, 0x24, 0x24, 0x18,   // p
+ 134          0x18, 0x24, 0x24, 0x18, 0xFC,   // q
+ 135          0x7C, 0x08, 0x04, 0x04, 0x08,   // r
+ 136          0x48, 0x54, 0x54, 0x54, 0x20,   // s
+ 137          0x04, 0x3F, 0x44, 0x40, 0x20,   // t
+ 138          0x3C, 0x40, 0x40, 0x20, 0x7C,   // u
+ 139          0x1C, 0x20, 0x40, 0x20, 0x1C,   // v
+ 140          0x3C, 0x40, 0x30, 0x40, 0x3C,   // w
+ 141          0x44, 0x28, 0x10, 0x28, 0x44,   // x
+ 142          0x1C, 0xA0, 0xA0, 0xA0, 0x7C,   // y
+ 143          0x44, 0x64, 0x54, 0x4C, 0x44,   // z
+ 144          
+ 145          0x00, 0x10, 0x7C, 0x82, 0x00,   // {
+ 146          0x00, 0x00, 0xFF, 0x00, 0x00,   // |
+ 147          0x00, 0x82, 0x7C, 0x10, 0x00,   // }
+ 148          0x00, 0x06, 0x09, 0x09, 0x06    // ~ (Degrees)
+ 149          };
+ 150          
+ 151          GLCD_Config GLCD;
+ 152          
+ 153          /**************************************************************************************************
+ 154                          void GLCD_Init()
+ 155          ***************************************************************************************************
+ 156           * I/P Arguments:  none
+ 157           * Return value : none
+ 158          
+ 159           * description  :This function is used to initialize the graphic lcd.
+ 160                           *It initializes the LCD for selected mode 8-bit
+ 161          **************************************************************************************************/
+ 162          void GLCD_Init()
+ 163          {
+ 164   1        /* Select the Page0/Page1 and Enable the GLCD */
+ 165   1        glcd_SelectPage0();
+ 166   1        glcd_CmdWrite(0x3f);
+ 167   1        glcd_SelectPage1();
+ 168   1        glcd_CmdWrite(0x3f);
+ 169   1        DELAY_ms(10);
+ 170   1      
+ 171   1        /* Select the Page0/Page1 and Enable the GLCD */
+ 172   1        glcd_SelectPage0();
+ 173   1        glcd_CmdWrite(0xc0);
+ 174   1        glcd_SelectPage1();
+C51 COMPILER V9.02   GLCD                                                                  09/23/2017 12:55:50 PAGE 4   
+
+ 175   1        glcd_CmdWrite(0xc0);
+ 176   1        GLCD_GoToPage(0);
+ 177   1      
+ 178   1        /* Clear the complete LCD during init */
+ 179   1        GLCD_Clear();
+ 180   1      
+ 181   1        /* Set the cursor to beginning of page0 */
+ 182   1        GLCD.PageNum=0;
+ 183   1        GLCD.LineNum=0xB8;
+ 184   1        GLCD.CursorPos=0x40;
+ 185   1        GLCD_GoToPage(0);
+ 186   1      }
+ 187          
+ 188          
+ 189          
+ 190          
+ 191          
+ 192          
+ 193          
+ 194          /***************************************************************************************************
+ 195                                 void GLCD_DisplayChar( char v_lcdData_u8)
+ 196          ****************************************************************************************************
+ 197           * I/P Arguments: ASCII value of the char to be displayed.
+ 198           * Return value    : none
+ 199          
+ 200           * description  : This function sends a character to be displayed on LCD.
+ 201                            Any valid ascii value can be passed to display respective character
+ 202          
+ 203          ****************************************************************************************************/
+ 204          void GLCD_DisplayChar(uint8_t ch)
+ 205          {
+ 206   1        uint8_t dat,i=0;
+ 207   1      
+ 208   1      
+ 209   1        if(((GLCD.PageNum == 0x01) && ((GLCD.CursorPos+FONT_SIZE)>=128)) || (ch=='\n'))
+ 210   1        {
+ 211   2          /* If the cursor has reached to end of line on page1
+ 212   2          OR NewLine command is issued Then Move the cursor to next line */
+ 213   2          GLCD_GoToNextLine();
+ 214   2        }
+ 215   1        if(ch!='\n') /* TODO */
+ 216   1        {
+ 217   2          ch = ch-0x20; // As the lookup table starts from Space(0x20)
+ 218   2      
+ 219   2          while(1)
+ 220   2          {
+ 221   3            if((GLCD.PageNum == 0x00) && (GLCD.CursorPos==0x80))
+ 222   3            {
+ 223   4              /* If the cursor has reached to end of line on page0
+ 224   4                   Then Move the cursor to Page1 */
+ 225   4              GLCD_GoToPage(1);
+ 226   4            }
+ 227   3      
+ 228   3            dat= A_GlcdFontTable_U8[ch][i]; /* Get the data to be displayed for LookUptable*/
+ 229   3      
+ 230   3      
+ 231   3            glcd_DataWrite(dat); /* Display the data and keep track of cursor */
+ 232   3            GLCD.CursorPos++;
+ 233   3      
+ 234   3            i++;
+ 235   3      
+ 236   3            if(i==FONT_SIZE) /* Exit the loop if End of char is encountered */
+C51 COMPILER V9.02   GLCD                                                                  09/23/2017 12:55:50 PAGE 5   
+
+ 237   3            {
+ 238   4              glcd_DataWrite(0x00); /* Display the data and keep track of cursor */
+ 239   4              GLCD.CursorPos++;
+ 240   4              break;
+ 241   4            }
+ 242   3          }
+ 243   2        }
+ 244   1      }
+ 245          
+ 246          
+ 247          
+ 248          
+ 249          
+ 250          
+ 251          
+ 252          
+ 253          /***************************************************************************************************
+ 254                                 void GLCD_DisplayString(char *ptr_stringPointer_u8)
+ 255          ****************************************************************************************************
+ 256           * I/P Arguments: String(Address of the string) to be displayed.
+ 257           * Return value    : none
+ 258          
+ 259           * description  :
+ 260                         This function is used to display the ASCII string on the lcd.
+ 261                           1.The ptr_stringPointer_u8 points to the first char of the string
+ 262                              and traverses till the end(NULL CHAR)and displays a char each time.
+ 263          
+ 264          ****************************************************************************************************/
+ 265          void GLCD_DisplayString(uint8_t *ptr)
+ 266          {
+ 267   1        while(*ptr)
+ 268   1          GLCD_DisplayChar(*ptr++);
+ 269   1      }
+ 270          
+ 271          
+ 272          
+ 273          
+ 274          
+ 275          /***************************************************************************************************
+ 276                         void GLCD_ScrollMessage(uint8_t v_lineNumber_u8, char *ptr_msgPointer_u8)
+ 277          ****************************************************************************************************
+ 278           * I/P Arguments: 
+ 279                            uint8_t  : Line number on which the message has to be scrolled
+ 280                            char *: pointer to the string to be scrolled                      
+ 281          
+ 282           * Return value    : none
+ 283          
+ 284           * description  :This function scrolls the given message on the specified line.
+ 285                           If the specified line number is out of range then the message
+ 286                           will be scrolled on first line
+ 287          ****************************************************************************************************/
+ 288          #if (Enable_GLCD_ScrollMessage == 1)
+              void GLCD_ScrollMessage(uint8_t lineNum, char *strptr)
+              {
+                unsigned char i,j,k,l,cursor,ch;
+              
+              
+                if(lineNum > 7)
+                  lineNum = 0; // Select first line if the var_lineNumber_u8 is out of range
+              
+              
+              
+C51 COMPILER V9.02   GLCD                                                                  09/23/2017 12:55:50 PAGE 6   
+
+                for(i=0;strptr[i];i++)
+                {
+                  /* Loop to display the complete string,    each time 16 chars are displayed and
+                      pointer is incremented to point to next char */
+              
+                  for(k=0;k<6;k++)
+                  {
+                    GLCD_SetCursor(lineNum,6-k);     //Move the Cursor to first line
+                    cursor = 6-k;
+                    
+                    for(j=0;strptr[i+j] && (cursor<128);j++)
+                    {
+                      ch = strptr[i+j]-0x20;
+                      for(l=0;(l<5) && (cursor<128);l++)//Display first 16 Chars or till Null char is reached
+                      {
+                        glcd_DataWrite(A_GlcdFontTable_U8[ch][l]);
+                        cursor++;
+                        if(cursor==64)  /* Has the cursor reached end of page0 */
+                        {
+                          glcd_SelectPage1(); /*  then set it to beginning of page1 */
+                          glcd_CmdWrite(C_FirstLineAddress_U8+lineNum); 
+                          glcd_CmdWrite(0x40);        
+                        
+                        }                 
+                      } 
+                      
+                       glcd_DataWrite(0);
+                        cursor++;
+                        if(cursor==64)  /* Has the cursor reached end of page0 */
+                        {
+                          glcd_SelectPage1(); /*  then set it to beginning of page1 */
+                          glcd_CmdWrite(C_FirstLineAddress_U8+lineNum); 
+                          glcd_CmdWrite(0x40);        
+                        
+                        }       
+                    }
+                    
+                    while(cursor < 128)
+                    {
+                      DELAY_us(10);
+                      cursor++;
+                    }
+              
+                    DELAY_ms(20);
+                  }
+                }
+              } 
+              #endif
+ 347          
+ 348          
+ 349          
+ 350          
+ 351          
+ 352          /***************************************************************************************************
+ 353          void GLCD_DisplayNumber(uint8_t v_numericSystem_u8, uint32_t v_number_u32, uint8_t v_numOfDigitsToDisplay_
+             -u8)
+ 354          ****************************************************************************************************
+ 355           * Function name:  GLCD_DisplayNumber()
+ 356           * I/P Arguments: 
+ 357                            uint8_t :  specifies type of number C_BINARY_U8(2),C_DECIMAL_U8(10), C_HEX_U8(16)
+ 358                            uint32_t: Number to be displayed on the LCD.
+ 359                            uint8_t : Number of digits to be displayed
+C51 COMPILER V9.02   GLCD                                                                  09/23/2017 12:55:50 PAGE 7   
+
+ 360                            
+ 361           * Return value    : none
+ 362          
+ 363           * description  :This function is used to display a max of 10digit decimal/Hex number OR specified 
+ 364                           number of bits for binary number.
+ 365                          
+ 366                          1st parameter specifies type of number C_BINARY_U8(2),C_DECIMAL_U8(10), C_HEX_U8(16)      
+             -           
+ 367                          3rd parameter specifies the number of digits from the right side to be displayed
+ 368                           The output for the input combinations is as below
+ 369                         
+ 370              Binary:     1.(2,10,4) then 4-LSB will be displayed ie. 1010
+ 371                          2.(C_BINARY_U8,10,8) then 8-LSB will be displayed ie. 00001010
+ 372                          3.(C_BINARY_U8,10,2) then 2-LSB will be displayed ie. 10
+ 373                          
+ 374              Decimal:    4.(10,12345,4) then 4-digits ie. 2345 will be displayed
+ 375                          5.(C_DECIMAL_U8,12345,6) then 6-digits ie. 012345 will be displayed
+ 376                          6.(10,12345,C_DisplayDefaultDigits_U8) then 12345 will be displayed.\
+ 377                          
+ 378              Hex:        7.(16,0x12AB,3) then 3-digits ie. 2AB will be displayed
+ 379                          8.(C_HEX_U8,0x12AB,6) then 6-digits ie. 0012AB will be displayed
+ 380                          9.(C_HEX_U8,0x12AB,C_DisplayDefaultDigits_U8) then 12AB will be displayed.                
+ 381          ****************************************************************************************************/
+ 382          #if ((Enable_GLCD_DisplayNumber == 1) || (Enable_GLCD_DisplayFloatNumber == 1) || (Enable_GLCD_Printf==1))
+ 383          void GLCD_DisplayNumber(uint8_t v_numericSystem_u8, uint32_t v_number_u32, uint8_t v_numOfDigitsToDisplay_
+             -u8)
+ 384          {
+ 385   1          uint8_t i=0,a[10];
+ 386   1          
+ 387   1          if(C_BINARY_U8 == v_numericSystem_u8)
+ 388   1          {
+ 389   2              while(v_numOfDigitsToDisplay_u8!=0)
+ 390   2              {
+ 391   3                /* Start Extracting the bits from the specified bit positions.
+ 392   3                Get the Acsii values of the bits and display */
+ 393   3                i = util_GetBitStatus(v_number_u32,(v_numOfDigitsToDisplay_u8-1));
+ 394   3                GLCD_DisplayChar(util_Dec2Ascii(i));
+ 395   3                v_numOfDigitsToDisplay_u8--;
+ 396   3              }        
+ 397   2          }    
+ 398   1          else if(v_number_u32==0)
+ 399   1          {
+ 400   2              /* If the number is zero then update the array with the same for displaying */
+ 401   2              for(i=0;((i<v_numOfDigitsToDisplay_u8) && (i<C_MaxDigitsToDisplay_U8));i++)
+ 402   2                  GLCD_DisplayChar('0');
+ 403   2          }
+ 404   1          else
+ 405   1          {
+ 406   2              for(i=0;i<v_numOfDigitsToDisplay_u8;i++)
+ 407   2              {
+ 408   3                  /* Continue extracting the digits from right side
+ 409   3                     till the Specified v_numOfDigitsToDisplay_u8 */
+ 410   3                  if(v_number_u32!=0)
+ 411   3                  {
+ 412   4                      /* Extract the digits from the number till it becomes zero.
+ 413   4                      First get the remainder and divide the number by TypeOfNum(10-Dec, 16-Hex) each time.
+ 414   4                      
+ 415   4                      example for Decimal number: 
+ 416   4                      If v_number_u32 = 123 then extracted remainder will be 3 and number will be 12.
+ 417   4                      The process continues till it becomes zero or max digits reached*/
+ 418   4                      a[i]=util_GetMod32(v_number_u32,v_numericSystem_u8);
+ 419   4                      v_number_u32=v_number_u32/v_numericSystem_u8;
+C51 COMPILER V9.02   GLCD                                                                  09/23/2017 12:55:50 PAGE 8   
+
+ 420   4                  }
+ 421   3                  else if( (v_numOfDigitsToDisplay_u8 == C_DisplayDefaultDigits_U8) ||
+ 422   3                           (v_numOfDigitsToDisplay_u8 > C_MaxDigitsToDisplay_U8))
+ 423   3                  {
+ 424   4                      /* Stop the iteration if the Max number of digits are reached or 
+ 425   4                       the user expects exact(Default) digits in the number to be displayed */ 
+ 426   4                      break;
+ 427   4                  }
+ 428   3                  else
+ 429   3                  {
+ 430   4                      /* In case user expects more digits to be displayed than the actual digits in number,
+ 431   4                        then update the remaining digits with zero.
+ 432   4                     Ex: v_num_u32 is 123 and user wants five digits then 00123 has to be displayed */
+ 433   4                      a[i]=0;
+ 434   4                  }
+ 435   3              }
+ 436   2              
+ 437   2               while(i!=0)
+ 438   2              { 
+ 439   3                /* Finally get the ascii values of the digits and display*/
+ 440   3                GLCD_DisplayChar(util_Hex2Ascii(a[i-1]));
+ 441   3                i--;
+ 442   3              }
+ 443   2          }
+ 444   1      }
+ 445          #endif
+ 446          
+ 447          
+ 448          
+ 449          
+ 450          
+ 451          
+ 452          
+ 453          
+ 454          /*************************************************************************************************
+ 455                      void  GLCD_DisplayFloatNumber(double v_floatNum_f32)
+ 456          **************************************************************************************************
+ 457           * Function name:  GLCD_DisplayFloatNumber()
+ 458           * I/P Arguments: float: float Number to be displayed on the LCD.
+ 459          
+ 460           * Return value    : none
+ 461          
+ 462           * description  :This function is used to display a floating point number
+ 463                           It supports 6digits of precision.
+ 464          
+ 465              Note: Float will be disabled by default as it takes huge controller resources
+ 466                   It can be enabled by changing value of Enable_GLCD_DisplayFloatNumber to 1 in lcd.h
+ 467          ***************************************************************************************************/
+ 468          #if (Enable_GLCD_DisplayFloatNumber == 1)  
+              void GLCD_DisplayFloatNumber(double v_floatNum_f32)
+              {
+                  uint32_t v_temp_u32;
+                  /* Dirty hack to support the floating point by extracting the integer and fractional part.
+                    1.Type cast the number to int to get the integer part.
+                    2.Display the extracted integer part followed by a decimal point(.)
+                    3.Later the integer part is made zero by subtracting with the extracted integer value.
+                    4.Finally the fractional part is multiplied by 100000 to support 6-digit precision */
+              
+                  v_temp_u32 = (uint32_t) v_floatNum_f32;
+                  GLCD_DisplayNumber(C_DECIMAL_U8,v_temp_u32,C_DisplayDefaultDigits_U8);
+              
+                  GLCD_DisplayChar('.');
+C51 COMPILER V9.02   GLCD                                                                  09/23/2017 12:55:50 PAGE 9   
+
+              
+                  v_floatNum_f32 = v_floatNum_f32 - v_temp_u32;
+                  v_temp_u32 = v_floatNum_f32 * 1000000;
+                  GLCD_DisplayNumber(C_DECIMAL_U8,v_temp_u32,C_DisplayDefaultDigits_U8);
+              }
+              #endif
+ 488          
+ 489          
+ 490          
+ 491          
+ 492          
+ 493          
+ 494          /*************************************************************************************************
+ 495                      void GLCD_Printf(const char *argList, ...)
+ 496          **************************************************************************************************
+ 497           * Function name:  GLCD_Printf()
+ 498           * I/P Arguments: variable length arguments similar to printf
+ 499          
+ 500           * Return value    : none
+ 501          
+ 502           * description  :This function is similar to printf function in C.
+ 503                           It takes the arguments with specified format and prints accordingly
+ 504                           The supported format specifiers are as below.
+ 505                           1. %c: character
+ 506                           2. %d: signed 16-bit number
+ 507                           3. %D: signed 32-bit number
+ 508                           4. %u: unsigned 16-bit number
+ 509                           5. %U: unsigned 32-bit number
+ 510                           6. %b: 16-bit binary number
+ 511                           7. %B: 32-bit binary number
+ 512                           8. %f: Float number
+ 513                           9. %x: 16-bit hexadecimal number
+ 514                           10. %X: 32-bit hexadecimal number
+ 515                           11. %s: String
+ 516          
+ 517          
+ 518          
+ 519            Extra feature is available to specify the number of digits to be displayed using printf.
+ 520               ex: %4d: will display the lower four digits of the decimal number.
+ 521                   %12b: will display the 12-LSB of the number
+ 522                   %d: Will display the exact digits of the number
+ 523          
+ 524          #####: In case of printing the 8-bit variables, it is recommended to type cast and promote them to uint16_
+             -t.
+ 525                  uint8_t v_Num_u8;
+ 526                  GLCD_Printf("num1:%u",(uint16_t)v_Num_u8); 
+ 527          **************************************************************************************************/
+ 528          #if ( Enable_GLCD_Printf == 1 ) 
+ 529          void GLCD_Printf(const char *argList, ...)
+ 530          {
+ 531   1          const char *ptr;
+ 532   1          va_list argp;
+ 533   1          sint16_t v_num_s16;
+ 534   1          sint32_t v_num_s32;
+ 535   1          uint16_t v_num_u16;
+ 536   1          uint32_t v_num_u32;
+ 537   1          char *str;
+ 538   1          char  ch;
+ 539   1          uint8_t v_numOfDigitsToDisp_u8;
+ 540   1      #if (Enable_GLCD_DisplayFloatNumber == 1)  
+                  double v_floatNum_f32;
+              #endif
+C51 COMPILER V9.02   GLCD                                                                  09/23/2017 12:55:50 PAGE 10  
+
+ 543   1      
+ 544   1          va_start(argp, argList);
+ 545   1      
+ 546   1          /* Loop through the list to extract all the input arguments */
+ 547   1          for(ptr = argList; *ptr != '\0'; ptr++)
+ 548   1          {
+ 549   2      
+ 550   2              ch= *ptr;
+ 551   2              if(ch == '%')         /*Check for '%' as there will be format specifier after it */
+ 552   2              {
+ 553   3                  ptr++;
+ 554   3                  ch = *ptr;
+ 555   3                 if((ch>=0x30) && (ch<=0x39))
+ 556   3                  {
+ 557   4                     v_numOfDigitsToDisp_u8 = 0;
+ 558   4                     while((ch>=0x30) && (ch<=0x39))
+ 559   4                      {
+ 560   5                         v_numOfDigitsToDisp_u8 = (v_numOfDigitsToDisp_u8 * 10) + (ch-0x30);
+ 561   5                         ptr++;
+ 562   5                         ch = *ptr;
+ 563   5                      }
+ 564   4                  }
+ 565   3                  else
+ 566   3                  {
+ 567   4                    v_numOfDigitsToDisp_u8 = C_MaxDigitsToDisplayUsingPrintf_U8;
+ 568   4                  }                
+ 569   3      
+ 570   3      
+ 571   3                  switch(ch)       /* Decode the type of the argument */
+ 572   3                  {
+ 573   4                  case 'C':
+ 574   4                  case 'c':     /* Argument type is of char, hence read char data from the argp */
+ 575   4                      ch = va_arg(argp, int);
+ 576   4                      GLCD_DisplayChar(ch);
+ 577   4                      break;
+ 578   4      
+ 579   4                  case 'd':    /* Argument type is of signed integer, hence read 16bit data from the argp */
+ 580   4                      v_num_s16 = va_arg(argp, int);
+ 581   4                      if(v_num_s16<0)
+ 582   4                       { /* If the number is -ve then display the 2's complement along with '-' sign */ 
+ 583   5                         v_num_s16 = -v_num_s16;
+ 584   5                         GLCD_DisplayChar('-');
+ 585   5                       }
+ 586   4                      GLCD_DisplayNumber(C_DECIMAL_U8,v_num_s16,v_numOfDigitsToDisp_u8);
+ 587   4                      break;
+ 588   4                      
+ 589   4                  case 'D':    /* Argument type is of integer, hence read 16bit data from the argp */
+ 590   4                      v_num_s32 = va_arg(argp, sint32_t);
+ 591   4                      if(v_num_s32<0)
+ 592   4                       { /* If the number is -ve then display the 2's complement along with '-' sign */
+ 593   5                         v_num_s32 = -v_num_s32;
+ 594   5                         GLCD_DisplayChar('-');
+ 595   5                       }
+ 596   4                      GLCD_DisplayNumber(C_DECIMAL_U8,v_num_s32,v_numOfDigitsToDisp_u8);              
+ 597   4                      break;    
+ 598   4      
+ 599   4                  case 'u':    /* Argument type is of unsigned integer, hence read 16bit unsigned data */
+ 600   4                      v_num_u16 = va_arg(argp, int);
+ 601   4                      GLCD_DisplayNumber(C_DECIMAL_U8,v_num_u16,v_numOfDigitsToDisp_u8);
+ 602   4                      break;
+ 603   4                  
+ 604   4                  case 'U':    /* Argument type is of integer, hence read 32bit unsigend data */
+C51 COMPILER V9.02   GLCD                                                                  09/23/2017 12:55:50 PAGE 11  
+
+ 605   4                      v_num_u32 = va_arg(argp, uint32_t);
+ 606   4                      GLCD_DisplayNumber(C_DECIMAL_U8,v_num_u32,v_numOfDigitsToDisp_u8);               
+ 607   4                      break;            
+ 608   4      
+ 609   4                  case 'x':  /* Argument type is of hex, hence hexadecimal data from the argp */
+ 610   4                      v_num_u16 = va_arg(argp, int);
+ 611   4                      GLCD_DisplayNumber(C_HEX_U8,v_num_u16,v_numOfDigitsToDisp_u8);
+ 612   4                      break;
+ 613   4      
+ 614   4                  case 'X':  /* Argument type is of hex, hence hexadecimal data from the argp */
+ 615   4                      v_num_u32 = va_arg(argp, uint32_t);
+ 616   4                      GLCD_DisplayNumber(C_HEX_U8,v_num_u32,v_numOfDigitsToDisp_u8);                
+ 617   4                      break;
+ 618   4      
+ 619   4                  
+ 620   4                  case 'b':  /* Argument type is of binary,Read int and convert to binary */
+ 621   4                      v_num_u16 = va_arg(argp, int);
+ 622   4                      if(v_numOfDigitsToDisp_u8 == C_MaxDigitsToDisplayUsingPrintf_U8)
+ 623   4                         v_numOfDigitsToDisp_u8 = 16;
+ 624   4                      GLCD_DisplayNumber(C_BINARY_U8,v_num_u16,v_numOfDigitsToDisp_u8);                
+ 625   4                      break;
+ 626   4      
+ 627   4                  case 'B':  /* Argument type is of binary,Read int and convert to binary */
+ 628   4                      v_num_u32 = va_arg(argp, uint32_t);
+ 629   4                      if(v_numOfDigitsToDisp_u8 == C_MaxDigitsToDisplayUsingPrintf_U8)
+ 630   4                         v_numOfDigitsToDisp_u8 = 16;                
+ 631   4                      GLCD_DisplayNumber(C_BINARY_U8,v_num_u32,v_numOfDigitsToDisp_u8);                
+ 632   4                      break;
+ 633   4      
+ 634   4      
+ 635   4                  case 'F':
+ 636   4                  case 'f': /* Argument type is of float, hence read double data from the argp */
+ 637   4      #if (Enable_GLCD_DisplayFloatNumber == 1)  
+                              v_floatNum_f32 = va_arg(argp, double);              
+                              GLCD_DisplayFloatNumber(v_floatNum_f32);
+              #endif
+ 641   4                      break;
+ 642   4      
+ 643   4      
+ 644   4                  case 'S':
+ 645   4                  case 's': /* Argument type is of string, hence get the pointer to sting passed */
+ 646   4                      str = va_arg(argp, char *);
+ 647   4                      GLCD_DisplayString(str);                
+ 648   4                      break;
+ 649   4      
+ 650   4                  case '%':
+ 651   4                      GLCD_DisplayChar('%');
+ 652   4                      break;
+ 653   4                  }
+ 654   3              }
+ 655   2              else
+ 656   2              {
+ 657   3                  /* As '%' is not detected display/transmit the char passed */
+ 658   3                  GLCD_DisplayChar(ch);
+ 659   3              }
+ 660   2          }
+ 661   1      
+ 662   1          va_end(argp);
+ 663   1      }
+ 664          #endif
+ 665          
+ 666          
+C51 COMPILER V9.02   GLCD                                                                  09/23/2017 12:55:50 PAGE 12  
+
+ 667          
+ 668          
+ 669          
+ 670          
+ 671          /***************************************************************************************************
+ 672                                   void GLCD_Clear()
+ 673          ****************************************************************************************************
+ 674           * I/P Arguments: none.
+ 675           * Return value    : none
+ 676          
+ 677           * description  :This function clears the LCD and moves the cursor to beginning of first line
+ 678          ****************************************************************************************************/
+ 679          void GLCD_Clear()
+ 680          {
+ 681   1        uint8_t line,cursor;
+ 682   1      
+ 683   1        for(line=0;line<8;line++)  /* loop through all the 8lines to clear the display */
+ 684   1        {
+ 685   2          glcd_SelectPage0();   /* Select page0 and set the cursor to first position */
+ 686   2          glcd_CmdWrite(0x40);
+ 687   2          glcd_CmdWrite(C_FirstLineAddress_U8+line);
+ 688   2          for(cursor=0;cursor<128;cursor++) /* Clear all the 128 pixels of selected line */
+ 689   2          {
+ 690   3            if(cursor==64)  /* Has the cursor reached end of page0 */
+ 691   3            {
+ 692   4              glcd_SelectPage1(); /*  then set it to beginning of page1 */
+ 693   4              glcd_CmdWrite(0x40);
+ 694   4              glcd_CmdWrite(C_FirstLineAddress_U8+line);
+ 695   4            }
+ 696   3            glcd_DataWrite(0x00); /* Clear each pixel by displaying blank */
+ 697   3          }
+ 698   2        }
+ 699   1      
+ 700   1        GLCD_GoToLine(0);
+ 701   1      }
+ 702          
+ 703          
+ 704          
+ 705          
+ 706          
+ 707          
+ 708          /***************************************************************************************************
+ 709                                   void GLCD_GoToPage(uint8_t v_pageNumber_u8)
+ 710          ****************************************************************************************************
+ 711           * I/P Arguments: uint8_t: page number(0/1).
+ 712           * Return value    : none
+ 713          
+ 714           * description  :This function moves the Cursor to beginning of the specified page.
+ 715                  If the requested page number is out of range, it will not move the cursor.
+ 716          ****************************************************************************************************/
+ 717          void GLCD_GoToPage(uint8_t pageNumber)
+ 718          {
+ 719   1      
+ 720   1        if((pageNumber==0) || (pageNumber ==1))
+ 721   1        { /* for 128/64 GLCD only page 0&1 are supported.
+ 722   2          Select the specified page and move the cursor accordingly */
+ 723   2          if(pageNumber == 0)
+ 724   2          {
+ 725   3      
+ 726   3            glcd_SelectPage0();
+ 727   3          }
+ 728   2          else
+C51 COMPILER V9.02   GLCD                                                                  09/23/2017 12:55:50 PAGE 13  
+
+ 729   2          {
+ 730   3            glcd_SelectPage1();
+ 731   3          }
+ 732   2      
+ 733   2          GLCD.PageNum=pageNumber;
+ 734   2          GLCD.CursorPos=0x40;
+ 735   2          glcd_CmdWrite(GLCD.LineNum);
+ 736   2          glcd_CmdWrite(GLCD.CursorPos);
+ 737   2        }
+ 738   1      }
+ 739          
+ 740          
+ 741          
+ 742          
+ 743          
+ 744          /***************************************************************************************************
+ 745                                   void GLCD_GoToLine(uint8_t v_lineNumber_u8)
+ 746          ****************************************************************************************************
+ 747           * I/P Arguments: uint8_t: Line number(0-7).
+ 748           * Return value    : none
+ 749          
+ 750           * description  :This function moves the Cursor to beginning of the specified line.
+ 751                  If the requested line number is out of range, it will not move the cursor.
+ 752          
+ 753           Note: The line numbers run from 0 to 7
+ 754          ****************************************************************************************************/
+ 755          void  GLCD_GoToLine(uint8_t lineNumber)
+ 756          {
+ 757   1        if(lineNumber<8)
+ 758   1        {   /* If the line number is within range
+ 759   2             then move it to specified line on page0 and keep track*/
+ 760   2          GLCD.LineNum = lineNumber+C_FirstLineAddress_U8;
+ 761   2          GLCD_GoToPage(0);
+ 762   2        }
+ 763   1      }
+ 764          
+ 765          
+ 766          
+ 767          
+ 768          
+ 769          
+ 770          /***************************************************************************************************
+ 771                                   void  GLCD_GoToNextLine()
+ 772          ****************************************************************************************************
+ 773           * I/P Arguments: none
+ 774           * Return value    : none
+ 775          
+ 776           * description  :This function moves the Cursor to beginning of the next line.
+ 777                  If the cursor is on last line and NextLine command is issued then 
+ 778                  it will move the cursor to first line.
+ 779          ****************************************************************************************************/
+ 780          void  GLCD_GoToNextLine()
+ 781          {
+ 782   1        /*Increment the current line number.
+ 783   1          In case it exceeds the limit, rool it back to first line */
+ 784   1        GLCD.LineNum++;
+ 785   1        if(GLCD.LineNum > C_LastLineAddress_U8)
+ 786   1          GLCD.LineNum = C_FirstLineAddress_U8;
+ 787   1        GLCD_GoToPage(0); /* Finally move it to next line on page0 */
+ 788   1      }
+ 789          
+ 790          
+C51 COMPILER V9.02   GLCD                                                                  09/23/2017 12:55:50 PAGE 14  
+
+ 791          
+ 792          
+ 793          
+ 794          
+ 795          
+ 796          /***************************************************************************************************
+ 797                          void GLCD_SetCursor(char v_lineNumber_u8,char v_charNumber_u8)
+ 798          ****************************************************************************************************
+ 799           * I/P Arguments: char row,char col
+ 800                           row -> line number(line1=1, line2=2),
+ 801                                  For 2line LCD the I/P argument should be either 1 or 2.
+ 802                           col -> char number.
+ 803                                  For 16-char LCD the I/P argument should be between 0-15.
+ 804           * Return value    : none
+ 805          
+ 806           * description  :This function moves the Cursor to specified position
+ 807          
+ 808                             Note:If the Input(Line/Char number) are out of range 
+ 809                                  then no action will be taken
+ 810          ****************************************************************************************************/
+ 811          void GLCD_SetCursor(uint8_t lineNumber,uint8_t CursorPosition)
+ 812          {
+ 813   1      
+ 814   1        uint8_t pageNumber;
+ 815   1      
+ 816   1        if(((lineNumber >=0x00)    && (lineNumber <= C_GlcdLastLine_U8))
+ 817   1            && ((CursorPosition>=0x00) && (CursorPosition <= 128)) )
+ 818   1        {
+ 819   2          pageNumber = CursorPosition / 64; //Divide the cursor pos by 64 to get the page
+ 820   2          CursorPosition = CursorPosition % 0x3f; // Cusror pos should be within 64(0x3f),
+ 821   2          if(pageNumber==0x00)  /* Check for page number and set accordingly */
+ 822   2          {
+ 823   3            glcd_SelectPage0();
+ 824   3          }
+ 825   2          else
+ 826   2          {
+ 827   3            glcd_SelectPage1();
+ 828   3          }
+ 829   2      
+ 830   2          GLCD.PageNum = pageNumber; /* Keep the track of page selected */
+ 831   2          GLCD.LineNum=lineNumber | C_FirstLineAddress_U8; /* Select the specified line number */
+ 832   2          GLCD.CursorPos=CursorPosition |0x40; /* Select the specified cursor position */
+ 833   2      
+ 834   2          glcd_CmdWrite(GLCD.CursorPos); /* Command the LCD to move to specified page,line,cursor*/
+ 835   2          glcd_CmdWrite(GLCD.LineNum);
+ 836   2        }
+ 837   1      }
+ 838          
+ 839          
+ 840          
+ 841          
+ 842          /***************************************************************************************************
+ 843                                 void GLCD_DisplayLogo(char *ptr_Logo)
+ 844          ****************************************************************************************************
+ 845           * I/P Arguments   : Array Bit Map(Address of Bit Map) to be displayed.
+ 846           * Return value    : none
+ 847          
+ 848           * description  :
+ 849                         This function is used to display the logo for using the bit map.
+ 850                         User should pass the array/address of bitmap for diplay the logo.
+ 851                         User can enable/disable the inversion of the dislpay by using the below functions.
+ 852                         GLCD_EnableInversion/GLCD_DisableInversion
+C51 COMPILER V9.02   GLCD                                                                  09/23/2017 12:55:50 PAGE 15  
+
+ 853          ****************************************************************************************************/
+ 854          #if (Enable_GLCD_DisplayLogo == 1)
+ 855          void GLCD_DisplayLogo(char *ptr_Logo)
+ 856          {
+ 857   1        uint8_t line,cursor;
+ 858   1      
+ 859   1        for(line=0;line<8;line++)
+ 860   1        {
+ 861   2          glcd_SelectPage0();
+ 862   2            glcd_CmdWrite(0x40);
+ 863   2          glcd_CmdWrite(C_FirstLineAddress_U8+line);
+ 864   2          for(cursor=0;cursor<128;cursor++)
+ 865   2          {
+ 866   3            if(cursor==64)
+ 867   3            {
+ 868   4              glcd_SelectPage1();
+ 869   4              glcd_CmdWrite(0x40);
+ 870   4              glcd_CmdWrite(C_FirstLineAddress_U8+line);
+ 871   4            }
+ 872   3            glcd_DataWrite(*ptr_Logo++);
+ 873   3          }
+ 874   2        }
+ 875   1      }
+ 876          #endif
+ 877          
+ 878          
+ 879          
+ 880          
+ 881          
+ 882          /***************************************************************************************************
+ 883          void GLCD_VerticalGraph(uint8_t var_barGraphNumber_u8, uint8_t var_percentageValue_u8)
+ 884           ****************************************************************************************************
+ 885           * I/P Arguments   : var_barGraphNumber_u8 : position of bar ( 0 to 3 )
+ 886                               var_percentageValue_u8 : value of the bar in percentage(0-100)
+ 887           * Return value    : none
+ 888          
+ 889           * description  :
+ 890                          This function displays bar graph in horizontal direction.
+ 891           ****************************************************************************************************/
+ 892          #if (ENABLE_GLCD_VerticalGraph ==1)
+ 893          void GLCD_VerticalGraph(uint8_t var_barGraphNumber_u8, uint8_t var_percentageValue_u8)
+ 894          {
+ 895   1          uint8_t var_lineNumberToStartDisplay_u8,i,j,var_barGraphPosition_u8;
+ 896   1          uint8_t lineNumber,var_valueToDisplay_u8;
+ 897   1      
+ 898   1       
+ 899   1          if((var_barGraphNumber_u8 < C_MaxBarGraphs_U8) && (var_percentageValue_u8<=100))
+ 900   1          {
+ 901   2              var_barGraphPosition_u8 = var_barGraphNumber_u8 * 32;
+ 902   2      
+ 903   2              GLCD_SetCursor(0,var_barGraphPosition_u8+8);
+ 904   2              GLCD_DisplayNumber(E_DECIMAL,var_percentageValue_u8,3);
+ 905   2              
+ 906   2              
+ 907   2              /* Divide the value by 8, as we have 8-pixels for each line */
+ 908   2              var_percentageValue_u8 = var_percentageValue_u8/2;
+ 909   2              var_lineNumberToStartDisplay_u8 = (var_percentageValue_u8>>3);
+ 910   2              lineNumber = 7-var_lineNumberToStartDisplay_u8;
+ 911   2              
+ 912   2      
+ 913   2              for(i=1;i<8;i++) 
+ 914   2              {
+C51 COMPILER V9.02   GLCD                                                                  09/23/2017 12:55:50 PAGE 16  
+
+ 915   3                  GLCD_SetCursor(i,(var_barGraphPosition_u8+12));
+ 916   3                  if(i<lineNumber)
+ 917   3                  {
+ 918   4                      var_valueToDisplay_u8 = 0x00;
+ 919   4                  }
+ 920   3                  else if(i== lineNumber)
+ 921   3                  {
+ 922   4                      var_valueToDisplay_u8 = util_GetMod8(var_percentageValue_u8,8);
+ 923   4                      var_valueToDisplay_u8 = (0xff<<(8-var_valueToDisplay_u8));
+ 924   4                  }
+ 925   3                  else
+ 926   3                  {
+ 927   4                      var_valueToDisplay_u8 = 0xff;
+ 928   4                  }
+ 929   3                  
+ 930   3                  for(j=0;j<12;j++)
+ 931   3                  {                
+ 932   4                      glcd_DataWrite(var_valueToDisplay_u8);
+ 933   4                  }
+ 934   3              }
+ 935   2          }
+ 936   1      }
+ 937          #endif
+ 938          
+ 939          
+ 940          
+ 941          
+ 942          /***************************************************************************************************
+ 943            void GLCD_DisplayHorizontalGraph(uint8_t var_barGraphNumber_u8, uint8_t var_percentageValue_u8)
+ 944           ****************************************************************************************************
+ 945           * I/P Arguments   : var_barGraphNumber_u8 : position of bar ( 0 to 3 )
+ 946                               var_percentageValue_u8 : value of the bar in percentage(0-100)
+ 947           * Return value    : none
+ 948          
+ 949           * description  :
+ 950                          This function displays bar graph in vertical direction.
+ 951           ****************************************************************************************************/
+ 952          #if (ENABLE_GLCD_HorizontalGraph ==1)
+ 953          void GLCD_HorizontalGraph(uint8_t var_barGraphNumber_u8, uint8_t var_percentageValue_u8)
+ 954          {
+ 955   1          uint8_t var_lineNumber_u8,i;
+ 956   1          var_lineNumber_u8 = (var_barGraphNumber_u8 * 2)+1;
+ 957   1          
+ 958   1          if((var_barGraphNumber_u8 < C_MaxBarGraphs_U8) && (var_percentageValue_u8<=100))
+ 959   1          {
+ 960   2              GLCD_GoToPage(0);
+ 961   2              GLCD_SetCursor(var_lineNumber_u8,0);
+ 962   2              
+ 963   2              for(i=0;i<var_percentageValue_u8;i++)
+ 964   2              {
+ 965   3                  if(i==64)
+ 966   3                  GLCD_GoToPage(1);
+ 967   3                  
+ 968   3                  glcd_DataWrite(0xff);
+ 969   3                  
+ 970   3              }
+ 971   2              
+ 972   2              for(i=var_percentageValue_u8;i<100;i++)
+ 973   2              {
+ 974   3                  if(i==64)
+ 975   3                  GLCD_GoToPage(1);
+ 976   3                  
+C51 COMPILER V9.02   GLCD                                                                  09/23/2017 12:55:50 PAGE 17  
+
+ 977   3                  glcd_DataWrite(0x00);
+ 978   3              }
+ 979   2              
+ 980   2              GLCD_SetCursor(var_lineNumber_u8,105);
+ 981   2      
+ 982   2              GLCD_DisplayNumber(E_DECIMAL,var_percentageValue_u8,3);
+ 983   2          }
+ 984   1      }
+ 985          #endif
+ 986          
+ 987          
+ 988          
+ 989          /***************************************************************************************************
+ 990                                 void GLCD_EnableInversion(void)
+ 991          ****************************************************************************************************
+ 992           * I/P Arguments   : none.
+ 993           * Return value    : none
+ 994          
+ 995           * description  :
+ 996                         This function is used to Enable the display inversion.
+ 997                         Once this is enabled the background pixels will be turned ON and char pixels will be OFF.
+ 998          
+ 999          ****************************************************************************************************/
+1000          #if (Enable_GLCD_EnableInversion == 1)
+              void GLCD_EnableInversion(void)
+              {
+                  GLCD.Invertdisplay = 0xFF;
+              }
+              #endif
+1006          
+1007          
+1008          
+1009          
+1010          
+1011          
+1012          
+1013          /***************************************************************************************************
+1014                                 void GLCD_DisableInversion(void)
+1015          ****************************************************************************************************
+1016           * I/P Arguments   : none.
+1017           * Return value    : none
+1018          
+1019           * description  :
+1020                         This function is used to clear the display inversion.
+1021          
+1022          ****************************************************************************************************/
+1023          #if (Enable_GLCD_DisableInversion == 1)
+              void GLCD_DisableInversion(void)
+              {
+                  GLCD.Invertdisplay = 0x00;
+              }
+              #endif
+1029          
+1030          
+1031          
+1032          
+1033          
+1034          /***************************************************************************************************
+1035                                                   Local Functions
+1036          ***************************************************************************************************/
+1037          void glcd_CmdWrite( uint8_t cmd)
+1038          {
+C51 COMPILER V9.02   GLCD                                                                  09/23/2017 12:55:50 PAGE 18  
+
+1039   1        glcd_BusyCheck();
+1040   1        LcdDataBus = cmd;
+1041   1        GlcdClearBit(RS);   // Select the Command Register by pulling RS LOW
+1042   1        GlcdClearBit(RW);    // Select the Write operation by pulling RW LOW
+1043   1        GlcdSetBit(EN);      // Send a High-to-Low Pulse at Enable Pin
+1044   1        DELAY_us(1);
+1045   1        GlcdClearBit(EN);
+1046   1      }
+1047          
+1048          
+1049          
+1050          
+1051          void glcd_DataWrite( uint8_t dat)
+1052          {
+1053   1        glcd_BusyCheck();
+1054   1        LcdDataBus = dat ^ GLCD.Invertdisplay;
+1055   1        GlcdSetBit(RS);             // Select the Data Register by pulling RS LOW
+1056   1        GlcdClearBit(RW);           // Select the Write operation by pulling RW LOW
+1057   1        GlcdSetBit(EN);              // Send a High-to-Low Pulse at Enable Pin
+1058   1        DELAY_us(1);
+1059   1        GlcdClearBit(EN);
+1060   1      }
+1061          
+1062          
+1063          
+1064          
+1065          void glcd_SelectPage0()
+1066          {
+1067   1        GlcdSetBit(CS1);
+1068   1        GlcdClearBit(CS2);
+1069   1      }
+1070          
+1071          
+1072          
+1073          void glcd_SelectPage1()
+1074          {
+1075   1        GlcdSetBit(CS2);
+1076   1        GlcdClearBit(CS1);
+1077   1      }
+1078          
+1079          
+1080          
+1081          
+1082          
+1083          void glcd_BusyCheck()
+1084          { 
+1085   1      #ifdef RW                         //Perform Busy check if LCD_RW pin is used
+1086   1        uint8_t busyflag;
+1087   1      
+1088   1        util_UpdateBit(LcdDataBus,BUSY_FLAG,C_PinInput_U8); // Configure busy pin as input
+1089   1        GlcdClearBit(RS);           // Select the Command Register by pulling RS LOW
+1090   1        GlcdSetBit(RW);             // Select the Read Operation for busy flag by setting RW
+1091   1        do
+1092   1        {
+1093   2      
+1094   2          GlcdClearBit(EN);             // Send a High-to-Low Pulse at Enable Pin
+1095   2          DELAY_us(10);
+1096   2          GlcdSetBit(EN);
+1097   2          DELAY_us(10);
+1098   2          busyflag = util_GetBitStatus(LcdDataBus,BUSY_FLAG);
+1099   2        }while(busyflag);
+1100   1      #else
+C51 COMPILER V9.02   GLCD                                                                  09/23/2017 12:55:50 PAGE 19  
+
+                /* Busy flag cannot be read as LCD_RW is not available hence Extra delay of 10us is added
+                  to ensure the LCD completes previous operation and ready to receive new commands/data */
+                DELAY_us(10);
+              #endif
+1105   1      }
+1106          /***************************************************************************************************
+1107                                                   End of Local Functions
+1108          ***************************************************************************************************/
+1109          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1879    ----
+   CONSTANT SIZE    =    950    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      4      83
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

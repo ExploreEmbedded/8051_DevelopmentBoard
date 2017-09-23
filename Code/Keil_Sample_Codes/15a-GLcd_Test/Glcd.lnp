@@ -1,0 +1,6 @@
+"main.obj",
+".\delay.obj",
+".\glcd.obj",
+".\logo.obj" 
+TO "Glcd" 
+RAMSIZE(256) 
